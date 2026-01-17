@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  DONATOR
+  ORGANIZER
+  ADMIN
+}
+
+enum ItemStatus {
+  AVAILABLE
+  HELD
+  PURCHASED
+}
+
+/* =========================
+   USER
+========================= */
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  displayName  String
+  role         UserRole
+  createdAt    DateTime  @default(now())
+
+  // Relations
+  orphanage    Orphanage?
+  holds        WishlistItem[] @relation("ItemHold")
+  purchases    Donation[]
+}
+
+/* =========================
+   ORPHANAGE
+========================= */
+model Orphanage {
+  id           String    @id @default(uuid())
+  name         String
+  description  String?
+  website      String?
+  contactEmail String?
+  verified     Boolean   @default(false)
+
+  // Location
+  latitude     Float
+  longitude    Float
+
+  createdAt    DateTime  @default(now())
+
+  // Relations
+  organizerId  String    @unique
+  organizer    User      @relation(fields: [organizerId], references: [id])
+  children     Child[]
+}
+
+/* =========================
+   CHILD
+========================= */
+model Child {
+  id           String    @id @default(uuid())
+  firstName    String
+  age          Int?
+
+  createdAt    DateTime  @default(now())
+
+  // Relations
+  orphanageId  String
+  orphanage    Orphanage @relation(fields: [orphanageId], references: [id])
+  wishlist     WishlistItem[]
+}
+
+/* =========================
+   WISHLIST ITEM
+========================= */
+model WishlistItem {
+  id              String     @id @default(uuid())
+  name            String
+  description     String?
+  externalLink    String
+  price           Float?
+  status          ItemStatus @default(AVAILABLE)
+
+  // Locking
+  heldByUserId    String?
+  holdExpiresAt   DateTime?
+
+  createdAt       DateTime   @default(now())
+
+  // Relations
+  childId         String
+  child           Child      @relation(fields: [childId], references: [id])
+
+  heldBy          User?      @relation("ItemHold", fields: [heldByUserId], references: [id])
+  donation        Donation?
+}
+
+/* =========================
+   DONATION (AUDIT LOG)
+========================= */
+model Donation {
+  id              String   @id @default(uuid())
+  proofUrl        String?
+  orderId         String?
+  notes           String?
+
+  createdAt       DateTime @default(now())
+
+  // Relations
+  donorId         String
+  donor           User     @relation(fields: [donorId], references: [id])
+
+  itemId          String   @unique
+  item            WishlistItem @relation(fields: [itemId], references: [id])
+}
