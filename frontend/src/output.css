@@ -1,5 +1,62 @@
 /*! tailwindcss v4.1.18 | MIT License | https://tailwindcss.com */
 @layer properties;
+.flex {
+  display: flex;
+}
+.min-h-\[200px\] {
+  min-height: 200px;
+}
+.min-h-\[270px\] {
+  min-height: 270px;
+}
+.min-h-\[300px\] {
+  min-height: 300px;
+}
+.max-w-\[30p\] {
+  max-width: 30p;
+}
+.max-w-\[30px\] {
+  max-width: 30px;
+}
+.max-w-\[40px\] {
+  max-width: 40px;
+}
+.max-w-\[50px\] {
+  max-width: 50px;
+}
+.max-w-\[100px\] {
+  max-width: 100px;
+}
+.max-w-\[300px\] {
+  max-width: 300px;
+}
+.max-w-\[400px\] {
+  max-width: 400px;
+}
+.max-w-\[500px\] {
+  max-width: 500px;
+}
+.max-w-\[530px\] {
+  max-width: 530px;
+}
+.max-w-\[540px\] {
+  max-width: 540px;
+}
+.max-w-\[600px\] {
+  max-width: 600px;
+}
+.min-w-\[530px\] {
+  min-width: 530px;
+}
+.flex-col-reverse {
+  flex-direction: column-reverse;
+}
+.flex-row {
+  flex-direction: row;
+}
+.justify-between {
+  justify-content: space-between;
+}
 .border {
   border-style: var(--tw-border-style);
   border-width: 1px;
@@ -8,23 +65,35 @@
   border-style: var(--tw-border-style);
   border-width: 2px;
 }
-.border-\[\#000\] {
-  border-color: #000;
-}
 .border-\[\#06404D\] {
   border-color: #06404D;
 }
-.border-\[\#\] {
-  border-color: #;
+.bg-\[\#06404D\] {
+  background-color: #06404D;
 }
-.bg-\[\#000\] {
-  background-color: #000;
+.bg-\[\#F2ABA7\] {
+  background-color: #F2ABA7;
 }
 .bg-\[\#FFFCFA\] {
   background-color: #FFFCFA;
 }
-.text-\[3xl\] {
-  color: 3xl;
+.text-\[16px\] {
+  font-size: 16px;
+}
+.text-\[32px\] {
+  font-size: 32px;
+}
+.text-\[\#06404D\] {
+  color: #06404D;
+}
+.text-\[\#12707C\] {
+  color: #12707C;
+}
+.text-\[\#FFFCFA\] {
+  color: #FFFCFA;
+}
+.text-\[white\] {
+  color: white;
 }
 @property --tw-border-style {
   syntax: "*";
