@@ -28,31 +28,41 @@ The Dockerfile has been updated to automatically resolve failed migrations. Just
 
 ### Option 2: Manual Resolution via Railway Shell
 
-**For the specific error "type already exists" (P3018):**
+**For the specific error "type already exists" (P3018) or "migration marked as applied but still failing":**
 
-The migration partially applied - some objects exist but Prisma thinks it failed. Mark it as applied:
+The migration partially applied - some objects exist but Prisma thinks it failed. Force resolve it:
 
 1. **Open Railway Shell:**
    - Go to your backend service in Railway
    - Click "Deployments" → Latest deployment
    - Click "View Logs" → Three dots (⋯) → "Open Shell"
 
-2. **Mark the migration as applied (since objects already exist):**
+2. **Force resolve the migration:**
    ```bash
    cd backend
+   # First, try to mark as applied
    npx prisma migrate resolve --applied 20260118012341_add_password_field
-   ```
-
-3. **Continue with remaining migrations:**
-   ```bash
+   
+   # Wait a moment for the database to update
+   sleep 2
+   
+   # Now try to deploy
    npx prisma migrate deploy
    ```
 
-**If that doesn't work, try rolled-back approach:**
-```bash
-npx prisma migrate resolve --rolled-back 20260118012341_add_password_field
-npx prisma migrate deploy
-```
+3. **If that still fails, try rolled-back:**
+   ```bash
+   npx prisma migrate resolve --rolled-back 20260118012341_add_password_field
+   sleep 2
+   npx prisma migrate deploy
+   ```
+
+4. **If it's still stuck, check migration status:**
+   ```bash
+   npx prisma migrate status
+   ```
+   
+   This will show you which migrations are applied, pending, or failed.
 
 ### Option 3: Reset Database (⚠️ DESTROYS ALL DATA)
 
