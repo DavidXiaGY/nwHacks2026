@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import StatBlock from '../components/StatBlock'
 import HeroBackground from '../assets/HeroBackground.png'
+import AboutUsBackground from '../assets/AboutUsBackground.png'
 
 function Home() {
 
@@ -70,19 +71,31 @@ function Home() {
 
       {/* About Us Section */}
       <section className="bg-[#FFFCFA] border-b border-black border-[0.5px]">
-        <div className="max-w-6xl mx-auto py-20 px-4">
-          <div className="pb-12 mb-12">
-            <h2 className="heading-lg text-default mb-6">About Us</h2>
-            <p className="body-default text-default leading-relaxed max-w-[530px]">
-              We created Angel Tree for Orphanages to give donors a trusted and easy way to support verified orphanages. Our mission is to bring transparency and warmth to the giving process, ensuring that every gift reaches orphaned children who need it most.
-            </p>
+        {/* About Us Content with Background */}
+        <div className="relative">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <img 
+              src={AboutUsBackground} 
+              alt="About Us background illustration" 
+              className="w-full h-full object-cover object-bottom"
+            />
+          </div>
+          
+          <div className="relative z-10 max-w-6xl mx-auto py-20 px-4">
+            <div className="pb-12 mb-12">
+              <h2 className="heading-lg text-default mb-6">About Us</h2>
+              <p className="body-default text-default leading-relaxed max-w-[400px]">
+                We created Angel Tree for Orphanages to give donors a trusted and easy way to support verified orphanages. Our mission is to bring transparency and warmth to the giving process, ensuring that every gift reaches orphaned children who need it most.
+              </p>
+            </div>
           </div>
         </div>
         {/* Full-width border separating About Us from Contact Us */}
         <div className="w-full border-b border-black border-[0.5px]"></div>
         <div className="max-w-6xl mx-auto py-20 px-4">
           {/* Contact Us Footer */}
-          <div className="pb-12">
+          <div className="">
             <h2 className="heading-default text-default mb-6">CONTACT US</h2>
             <div className="flex flex-wrap gap-8">
               <div className="body-default text-default">Email</div>
