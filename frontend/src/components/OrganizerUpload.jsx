@@ -50,6 +50,7 @@ function OrganizerUpload() {
   const [childLoading, setChildLoading] = useState(false)
   const [loadingChildren, setLoadingChildren] = useState(false)
   const [selectedChild, setSelectedChild] = useState(null)
+  const [showAddChildForm, setShowAddChildForm] = useState(false)
 
   const API_BASE_URL = '/api'
 
@@ -669,6 +670,12 @@ function OrganizerUpload() {
       await loadChildren(existingOrphanageId, token)
       
       setChildMessage({ text: 'Child added successfully!', type: 'success' })
+      
+      // Close the form after a short delay to show success message
+      setTimeout(() => {
+        setShowAddChildForm(false)
+        setChildMessage({ text: '', type: '' })
+      }, 1500)
 
     } catch (error) {
       setChildMessage({ text: error.message || 'Failed to add child. Please try again.', type: 'error' })
@@ -1292,9 +1299,641 @@ function OrganizerUpload() {
                     Close
                   </button>
                 </div>
+              ) : showAddChildForm ? (
+                // Add Child Form
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => {
+                      setShowAddChildForm(false)
+                      setChildFormData({
+                        firstName: '',
+                        age: '',
+                        gender: '',
+                        clothingShirtSize: '',
+                        clothingPantSize: '',
+                        clothingShoeSize: '',
+                        clothingToyPreference: '',
+                        interests: '',
+                        notes: ''
+                      })
+                      setWishlistItems([{ name: '', description: '', externalLink: '', price: '' }])
+                      setChildMessage({ text: '', type: '' })
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: '0',
+                      right: '0',
+                      backgroundColor: '#06384D',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontFamily: "'Manrope', sans-serif",
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      marginBottom: '24px',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#052A35'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#06384D'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  
+                  <h2
+                    style={{
+                      fontFamily: "'Red Hat Display', sans-serif",
+                      fontSize: '32px',
+                      fontWeight: 900,
+                      color: '#06404D',
+                      marginBottom: '32px',
+                      marginTop: '0',
+                    }}
+                  >
+                    Add New Child
+                  </h2>
+                  
+                  {childMessage.text && (
+                    <div style={{
+                      padding: '12px',
+                      marginBottom: '24px',
+                      borderRadius: '8px',
+                      backgroundColor: childMessage.type === 'success' ? '#d4edda' : childMessage.type === 'error' ? '#f8d7da' : '#d1ecf1',
+                      color: childMessage.type === 'success' ? '#155724' : childMessage.type === 'error' ? '#721c24' : '#0c5460',
+                      border: `1px solid ${childMessage.type === 'success' ? '#c3e6cb' : childMessage.type === 'error' ? '#f5c6cb' : '#bee5eb'}`,
+                      fontFamily: "'Manrope', sans-serif",
+                      fontSize: '14px',
+                    }}>
+                      {childMessage.text}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleChildSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div>
+                      <label htmlFor="firstName" style={{
+                        fontFamily: "'Manrope', sans-serif",
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#06404D',
+                        display: 'block',
+                        marginBottom: '8px',
+                      }}>
+                        First Name *
+                      </label>
+                      <input
+                        type="text"
+                        id="firstName"
+                        name="firstName"
+                        value={childFormData.firstName}
+                        onChange={handleChildInputChange}
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #ccc',
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '16px',
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div>
+                        <label htmlFor="age" style={{
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          color: '#06404D',
+                          display: 'block',
+                          marginBottom: '8px',
+                        }}>
+                          Age
+                        </label>
+                        <input
+                          type="number"
+                          id="age"
+                          name="age"
+                          min="0"
+                          max="120"
+                          value={childFormData.age}
+                          onChange={handleChildInputChange}
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            borderRadius: '8px',
+                            border: '1px solid #ccc',
+                            fontFamily: "'Manrope', sans-serif",
+                            fontSize: '16px',
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="gender" style={{
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          color: '#06404D',
+                          display: 'block',
+                          marginBottom: '8px',
+                        }}>
+                          Gender
+                        </label>
+                        <input
+                          type="text"
+                          id="gender"
+                          name="gender"
+                          value={childFormData.gender}
+                          onChange={handleChildInputChange}
+                          placeholder="e.g., male, female, non-binary"
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            borderRadius: '8px',
+                            border: '1px solid #ccc',
+                            fontFamily: "'Manrope', sans-serif",
+                            fontSize: '16px',
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 style={{
+                        fontFamily: "'Red Hat Display', sans-serif",
+                        fontSize: '20px',
+                        fontWeight: 900,
+                        color: '#06404D',
+                        marginBottom: '16px',
+                        marginTop: '8px',
+                      }}>
+                        Clothing Sizes
+                      </h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                        <div>
+                          <label htmlFor="clothingShirtSize" style={{
+                            fontFamily: "'Manrope', sans-serif",
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            color: '#06404D',
+                            display: 'block',
+                            marginBottom: '8px',
+                          }}>
+                            Shirt Size
+                          </label>
+                          <input
+                            type="text"
+                            id="clothingShirtSize"
+                            name="clothingShirtSize"
+                            value={childFormData.clothingShirtSize}
+                            onChange={handleChildInputChange}
+                            placeholder="e.g., Youth Medium"
+                            style={{
+                              width: '100%',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid #ccc',
+                              fontFamily: "'Manrope', sans-serif",
+                              fontSize: '16px',
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="clothingPantSize" style={{
+                            fontFamily: "'Manrope', sans-serif",
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            color: '#06404D',
+                            display: 'block',
+                            marginBottom: '8px',
+                          }}>
+                            Pant Size
+                          </label>
+                          <input
+                            type="text"
+                            id="clothingPantSize"
+                            name="clothingPantSize"
+                            value={childFormData.clothingPantSize}
+                            onChange={handleChildInputChange}
+                            placeholder="e.g., Youth 8"
+                            style={{
+                              width: '100%',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid #ccc',
+                              fontFamily: "'Manrope', sans-serif",
+                              fontSize: '16px',
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="clothingShoeSize" style={{
+                            fontFamily: "'Manrope', sans-serif",
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            color: '#06404D',
+                            display: 'block',
+                            marginBottom: '8px',
+                          }}>
+                            Shoe Size
+                          </label>
+                          <input
+                            type="text"
+                            id="clothingShoeSize"
+                            name="clothingShoeSize"
+                            value={childFormData.clothingShoeSize}
+                            onChange={handleChildInputChange}
+                            placeholder="e.g., Youth 2 (US)"
+                            style={{
+                              width: '100%',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid #ccc',
+                              fontFamily: "'Manrope', sans-serif",
+                              fontSize: '16px',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="clothingToyPreference" style={{
+                        fontFamily: "'Manrope', sans-serif",
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#06404D',
+                        display: 'block',
+                        marginBottom: '8px',
+                      }}>
+                        Clothing/Toy Preference
+                      </label>
+                      <input
+                        type="text"
+                        id="clothingToyPreference"
+                        name="clothingToyPreference"
+                        value={childFormData.clothingToyPreference}
+                        onChange={handleChildInputChange}
+                        placeholder="e.g., Masculine, Feminine, Neutral"
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #ccc',
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '16px',
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="interests" style={{
+                        fontFamily: "'Manrope', sans-serif",
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#06404D',
+                        display: 'block',
+                        marginBottom: '8px',
+                      }}>
+                        Interests
+                      </label>
+                      <textarea
+                        id="interests"
+                        name="interests"
+                        value={childFormData.interests}
+                        onChange={handleChildInputChange}
+                        placeholder="e.g., Loves art, drawing, and music"
+                        rows={3}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #ccc',
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '16px',
+                          resize: 'vertical',
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="notes" style={{
+                        fontFamily: "'Manrope', sans-serif",
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#06404D',
+                        display: 'block',
+                        marginBottom: '8px',
+                      }}>
+                        Notes
+                      </label>
+                      <textarea
+                        id="notes"
+                        name="notes"
+                        value={childFormData.notes}
+                        onChange={handleChildInputChange}
+                        placeholder="Other notes for the child"
+                        rows={3}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #ccc',
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '16px',
+                          resize: 'vertical',
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <h3 style={{
+                        fontFamily: "'Red Hat Display', sans-serif",
+                        fontSize: '20px',
+                        fontWeight: 900,
+                        color: '#06404D',
+                        marginBottom: '16px',
+                        marginTop: '8px',
+                      }}>
+                        Wishlist Items
+                      </h3>
+                      
+                      {wishlistItems.map((item, index) => (
+                        <div key={index} style={{ 
+                          border: '1px solid #ccc', 
+                          padding: '16px', 
+                          marginBottom: '16px', 
+                          borderRadius: '8px',
+                          backgroundColor: '#f9f9f9',
+                        }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '12px' }}>
+                            <div>
+                              <label htmlFor={`wishlist-name-${index}`} style={{
+                                fontFamily: "'Manrope', sans-serif",
+                                fontSize: '14px',
+                                fontWeight: 700,
+                                color: '#06404D',
+                                display: 'block',
+                                marginBottom: '8px',
+                              }}>
+                                Item Name *
+                              </label>
+                              <input
+                                type="text"
+                                id={`wishlist-name-${index}`}
+                                value={item.name}
+                                onChange={(e) => handleWishlistItemChange(index, 'name', e.target.value)}
+                                placeholder="e.g., LEGO Set"
+                                style={{
+                                  width: '100%',
+                                  padding: '12px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #ccc',
+                                  fontFamily: "'Manrope', sans-serif",
+                                  fontSize: '16px',
+                                }}
+                              />
+                            </div>
+
+                            <div>
+                              <label htmlFor={`wishlist-link-${index}`} style={{
+                                fontFamily: "'Manrope', sans-serif",
+                                fontSize: '14px',
+                                fontWeight: 700,
+                                color: '#06404D',
+                                display: 'block',
+                                marginBottom: '8px',
+                              }}>
+                                External Link *
+                              </label>
+                              <input
+                                type="url"
+                                id={`wishlist-link-${index}`}
+                                value={item.externalLink}
+                                onChange={(e) => handleWishlistItemChange(index, 'externalLink', e.target.value)}
+                                placeholder="https://www.amazon.com/item"
+                                style={{
+                                  width: '100%',
+                                  padding: '12px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #ccc',
+                                  fontFamily: "'Manrope', sans-serif",
+                                  fontSize: '16px',
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '12px' }}>
+                            <div>
+                              <label htmlFor={`wishlist-description-${index}`} style={{
+                                fontFamily: "'Manrope', sans-serif",
+                                fontSize: '14px',
+                                fontWeight: 700,
+                                color: '#06404D',
+                                display: 'block',
+                                marginBottom: '8px',
+                              }}>
+                                Description
+                              </label>
+                              <textarea
+                                id={`wishlist-description-${index}`}
+                                value={item.description}
+                                onChange={(e) => handleWishlistItemChange(index, 'description', e.target.value)}
+                                placeholder="Optional description"
+                                rows={2}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #ccc',
+                                  fontFamily: "'Manrope', sans-serif",
+                                  fontSize: '16px',
+                                  resize: 'vertical',
+                                }}
+                              />
+                            </div>
+
+                            <div>
+                              <label htmlFor={`wishlist-price-${index}`} style={{
+                                fontFamily: "'Manrope', sans-serif",
+                                fontSize: '14px',
+                                fontWeight: 700,
+                                color: '#06404D',
+                                display: 'block',
+                                marginBottom: '8px',
+                              }}>
+                                Price
+                              </label>
+                              <input
+                                type="number"
+                                id={`wishlist-price-${index}`}
+                                step="0.01"
+                                min="0"
+                                value={item.price}
+                                onChange={(e) => handleWishlistItemChange(index, 'price', e.target.value)}
+                                placeholder="29.99"
+                                style={{
+                                  width: '100%',
+                                  padding: '12px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #ccc',
+                                  fontFamily: "'Manrope', sans-serif",
+                                  fontSize: '16px',
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {wishlistItems.length > 1 && (
+                            <button 
+                              type="button" 
+                              onClick={() => removeWishlistItem(index)}
+                              style={{
+                                backgroundColor: '#dc3545',
+                                color: '#FFFFFF',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '8px 16px',
+                                fontFamily: "'Manrope', sans-serif",
+                                fontSize: '14px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Remove Item
+                            </button>
+                          )}
+                        </div>
+                      ))}
+
+                      <button 
+                        type="button" 
+                        onClick={addWishlistItem}
+                        style={{
+                          backgroundColor: '#06404D',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '12px 24px',
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '16px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          marginBottom: '24px',
+                        }}
+                      >
+                        Add Another Wishlist Item
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setShowAddChildForm(false)
+                          setChildFormData({
+                            firstName: '',
+                            age: '',
+                            gender: '',
+                            clothingShirtSize: '',
+                            clothingPantSize: '',
+                            clothingShoeSize: '',
+                            clothingToyPreference: '',
+                            interests: '',
+                            notes: ''
+                          })
+                          setWishlistItems([{ name: '', description: '', externalLink: '', price: '' }])
+                          setChildMessage({ text: '', type: '' })
+                        }}
+                        style={{
+                          backgroundColor: '#06384D',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '12px 24px',
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '16px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        type="submit" 
+                        disabled={childLoading || !isChildFormValid()}
+                        style={{
+                          backgroundColor: childLoading || !isChildFormValid() ? '#ccc' : '#FF8FA3',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '12px 24px',
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '16px',
+                          fontWeight: 700,
+                          cursor: childLoading || !isChildFormValid() ? 'not-allowed' : 'pointer',
+                          opacity: childLoading || !isChildFormValid() ? 0.6 : 1,
+                          transition: 'background-color 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!childLoading && isChildFormValid()) {
+                            e.target.style.backgroundColor = '#FF7A95'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!childLoading && isChildFormValid()) {
+                            e.target.style.backgroundColor = '#FF8FA3'
+                          }
+                        }}
+                      >
+                        {childLoading ? 'Adding...' : 'Add Child'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               ) : (
                 // Grid View of Children
                 <>
+                  {/* Header with Add New Child Button */}
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'flex-end', 
+                    alignItems: 'center',
+                    marginBottom: '24px'
+                  }}>
+                    <button
+                      onClick={() => setShowAddChildForm(true)}
+                      style={{
+                        backgroundColor: '#EB8E89',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '12px 24px',
+                        fontFamily: "'Manrope', sans-serif",
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#D87A75'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#EB8E89'
+                      }}
+                    >
+                      Add New Child
+                    </button>
+                  </div>
+                  
                   <h2 className="sr-only">Existing Children</h2>
                   
                   {loadingChildren ? (
