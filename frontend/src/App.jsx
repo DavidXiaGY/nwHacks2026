@@ -1,6 +1,7 @@
 import './App.css'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginSignup from './pages/LoginSignup'
+import RegisterOrganization from './pages/RegisterOrganization'
 import OrganizerUpload from './components/OrganizerUpload'
 import Listings from './pages/Listings'
 import OrphanageDetails from './pages/OrphanageDetails'
@@ -15,6 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginSignup />} />
+        <Route path="/register-organization" element={<RegisterOrganization />} />
         <Route path="/organizer-upload" element={<OrganizerUpload />} />
         <Route path="/listings" element={<Listings />} />
         <Route path="/orphanage-details" element={<OrphanageDetails />} />
