@@ -164,4 +164,65 @@ router.post(
   }
 )
 
+// Update orphanage (organizer only - can only update their own orphanage)
+router.put(
+  '/',
+  authenticate,
+  requireRole('ORGANIZER'),
+  [
+    body('name').optional().trim().isLength({ min: 1 }),
+    body('description').optional().trim(),
+    body('website').optional().isURL(),
+    body('contactEmail').optional().isEmail(),
+    body('latitude').optional().isFloat(),
+    body('longitude').optional().isFloat()
+  ],
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ error: 'Validation failed', details: errors.array() })
+      }
+
+      const { name, description, website, contactEmail, latitude, longitude } = req.body
+
+      // Find the organizer's orphanage
+      const existingOrphanage = await prisma.orphanage.findUnique({
+        where: { organizerId: req.userId }
+      })
+
+      if (!existingOrphanage) {
+        return res.status(404).json({ error: 'No orphanage found for this organizer' })
+      }
+
+      // Prepare update data
+      const updateData = {}
+      if (name !== undefined) updateData.name = name
+      if (description !== undefined) updateData.description = description
+      if (website !== undefined) updateData.website = website
+      if (contactEmail !== undefined) updateData.contactEmail = contactEmail
+      if (latitude !== undefined) updateData.latitude = parseFloat(latitude)
+      if (longitude !== undefined) updateData.longitude = parseFloat(longitude)
+
+      const orphanage = await prisma.orphanage.update({
+        where: { id: existingOrphanage.id },
+        data: updateData,
+        include: {
+          organizer: {
+            select: {
+              id: true,
+              displayName: true,
+              email: true
+            }
+          }
+        }
+      })
+
+      res.json(orphanage)
+    } catch (error) {
+      next(error)
+    }
+  }
+)
+
 export default router
