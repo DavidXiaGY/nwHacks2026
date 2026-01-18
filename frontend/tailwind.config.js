@@ -4,13 +4,15 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-theme: {
-  extend: {
-    fontFamily: {
-      manrope: ['Manrope', 'sans-serif'],
-      redhatdisplay: ['"Red Hat Display"', 'sans-serif'],
+  theme: {
+    extend: {
+      fontFamily: {
+        manrope: ['Manrope', 'sans-serif'],
+        redhatdisplay: ['"Red Hat Display"', 'sans-serif'],
+        heading: ['"Red Hat Display"', 'sans-serif'],
+        body: ['Manrope', 'sans-serif'],
+      },
     },
   },
-},
   plugins: [],
 }
