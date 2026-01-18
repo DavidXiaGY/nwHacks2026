@@ -1,13 +1,11 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 
 function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [user, setUser] = useState(null)
-  const [showDropdown, setShowDropdown] = useState(false)
-  const dropdownRef = useRef(null)
 
   // Function to check auth state
   const checkAuthState = () => {
@@ -55,28 +53,15 @@ function Navbar() {
     }
   }, [location])
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
   const handleLogout = () => {
     localStorage.clear()
     setIsLoggedIn(false)
     setUser(null)
-    setShowDropdown(false)
     navigate('/')
   }
 
   return (
-    <nav className="bg-[#FFFCFA] px-4 md:px-6 py-4 flex items-center justify-between">
+    <nav className="bg-[#FFFFFF] border-b-[1px] border-[#06384D] px-4 md:px-6 py-[8px] flex items-center justify-between">
       {/* Logo/Project Name - Left */}
       <Link 
         to="/" 
@@ -101,46 +86,38 @@ function Navbar() {
         {/* Browse Listings Button */}
         <Link
           to="/map"
-          className="px-4 py-2 text-[#06384D] hover:text-[#EB8E89] font-medium transition-colors duration-300"
+          className="body-default !font-semibold px-4 py-2 text-[#06384D] hover:text-[#EB8E89] font-medium transition-colors duration-300"
         >
           Browse Listings
         </Link>
 
         {/* Login/Logout Button */}
         {isLoggedIn ? (
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="px-4 md:px-6 py-2 bg-[#EB8E89] text-[#06384D] rounded-lg hover:bg-[#d87d78] transition-all duration-300 font-medium shadow-md text-sm md:text-base flex items-center gap-2"
-            >
+          <div className="flex items-center gap-4">
+            <span className="body-default !font-semibold text-default">
               {user?.displayName || user?.email || 'Account'}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="px-[16px] py-[8px] body-default !font-bold text-[#08535C] rounded-[6px] hover:bg-[#EB8E89] hover:text-white transition-all duration-300 font-medium text-sm md:text-base flex items-center gap-2"
+            >
+              SIGN OUT
               <svg 
-                className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} 
+                className="w-4 h-4" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
-            
-            {showDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-[#06384D] hover:bg-[#EB8E89] hover:text-white transition-colors duration-200 text-sm md:text-base"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
           </div>
         ) : (
           <Link
             to="/login"
-            className="px-4 md:px-6 py-2 bg-[#EB8E89] text-[#06384D] rounded-lg hover:bg-[#d87d78] transition-all duration-300 font-medium shadow-md text-sm md:text-base"
+            className="px-[16px] py-[8px] bg-[#12707C] body-default !font-bold text-[#FFFFFF] rounded-[6px] hover:bg-[#d87d78] transition-all duration-300 font-medium text-sm md:text-base"
           >
-            Login
+            LOG IN
           </Link>
         )}
       </div>

@@ -18,11 +18,14 @@ const placeholderStyle = `
     background-position: right 12px center;
     padding-right: 36px;
   }
-  button:visited {
-    color: inherit;
-  }
   a:visited {
-    color: inherit;
+    color: white;
+  }
+  .register-org-button {
+    background-color: #12707C !important;
+  }
+  .register-org-button:hover:not(:disabled) {
+    background-color: #EB8E89 !important;
   }
 `
 
@@ -245,10 +248,10 @@ function RegisterOrganization() {
           <button 
             type="submit" 
             disabled={loading}
+            className={loading ? '' : 'register-org-button'}
             style={{
               width: 'auto',
               padding: '12px 24px',
-              backgroundColor: '#12707C',
               color: '#FFFFFF',
               border: 'none',
               borderRadius: '6px',
@@ -259,6 +262,8 @@ function RegisterOrganization() {
               cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.6 : 1,
               alignSelf: 'center',
+              transition: 'background-color 0.3s ease',
+              ...(loading && { backgroundColor: '#12707C' }),
             }}
           >
             {loading ? 'Processing...' : 'SIGN UP'}

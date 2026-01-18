@@ -26,23 +26,43 @@ const placeholderStyle = `
     background-position: right 12px center;
     padding-right: 36px;
   }
-  button:visited {
-    color: inherit;
-  }
   a:visited {
-    color: inherit;
+    color: white;
+  }
+  button[type="submit"] {
+    color: #FFFFFF !important;
+  }
+  button[type="submit"] span {
+    color: #FFFFFF !important;
+  }
+  .login-button-hover {
+    background-color: #EB8E89 !important;
+  }
+  .login-button-hover:hover:not(:disabled) {
+    background-color: #12707C !important;
+  }
+  .signup-button-hover {
+    background-color: #12707C !important;
+  }
+  .signup-button-hover:hover:not(:disabled) {
+    background-color: #EB8E89 !important;
   }
 `
 
 function LoginSignup() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [isLogin, setIsLogin] = useState(true)
+  // Initialize based on URL params immediately to prevent flash
+  const [isLogin, setIsLogin] = useState(() => {
+    return searchParams.get('mode') !== 'signup'
+  })
   
   // Check for signup mode in URL params
   useEffect(() => {
     if (searchParams.get('mode') === 'signup') {
       setIsLogin(false)
+    } else {
+      setIsLogin(true)
     }
   }, [searchParams])
   
@@ -302,7 +322,7 @@ function LoginSignup() {
               value={formData.password}
               onChange={handleInputChange}
               required
-              placeholder={isLogin ? "Enter your 6 character password" : "Enter your password"}
+              placeholder={isLogin ? "Enter your password" : "Enter your password"}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -371,27 +391,29 @@ function LoginSignup() {
             </>
           )}
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            style={{
-              width: 'auto',
-              padding: '12px 24px',
-              backgroundColor: isLogin ? '#EB8E89' : '#12707C',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '16px',
-              fontWeight: 700,
-              fontFamily: "'Red Hat Display', sans-serif",
-              textTransform: 'uppercase',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.6 : 1,
-              alignSelf: 'center',
-            }}
-          >
-            {loading ? 'Processing...' : (isLogin ? 'LOG IN' : 'SIGN UP')}
-          </button>
+            <button 
+              type="submit" 
+              disabled={loading}
+              className={loading ? '' : (isLogin ? 'login-button-hover' : 'signup-button-hover')}
+              style={{
+                width: 'auto',
+                padding: '12px 24px',
+                backgroundColor: isLogin ? '#EB8E89' : '#12707C',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '16px',
+                fontWeight: 700,
+                fontFamily: "'Red Hat Display', sans-serif",
+                textTransform: 'uppercase',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1,
+                alignSelf: 'center',
+                transition: 'background-color 0.3s ease',
+              }}
+            >
+              {loading ? 'Processing...' : (isLogin ? 'LOG IN' : 'SIGN UP')}
+            </button>
         </form>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0px', textAlign: 'center', fontSize: '14px', fontFamily: "'Manrope', sans-serif", color: "var(--color-text-secondary)" }}>
