@@ -1315,10 +1315,103 @@ function OrganizerUpload() {
         <div className="flex-1 bg-surface-secondary min-w-0 flex flex-col" style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
       {existingOrphanageId && (
         <>
-              {selectedChild ? null : showAddChildForm ? (
-                // Add Child Form
-                <div className="overflow-y-auto flex-1" style={{ position: 'relative', padding: '32px' }}>
-          <button
+              {selectedChild ? null : (
+                // Grid View of Children
+                <>
+                  <div className="p-[32px] overflow-y-auto flex-1" style={{ paddingBottom: '80px' }}>
+                    <h2 className="sr-only">Existing Children</h2>
+                    
+                    {loadingChildren ? (
+                      <div className="body-default text-default">Loading children...</div>
+                    ) : children.length === 0 ? (
+                      <div className="body-default text-default">No children added yet. Add a child below.</div>
+                    ) : (
+                      <div 
+                        style={{ 
+                          columnCount: 3,
+                          columnGap: '16px',
+                          columnFill: 'balance'
+                        }}
+                      >
+                        {children.map((child) => (
+                          <div
+                            key={child.id}
+                            style={{
+                              breakInside: 'avoid',
+                              marginBottom: '16px',
+                              pageBreakInside: 'avoid',
+                              WebkitColumnBreakInside: 'avoid'
+                            }}
+                          >
+                            <ChildInfoCard 
+                              child={{
+                                firstName: child.firstName,
+                                age: child.age,
+                                gender: child.gender,
+                                wishlist: child.wishlist || [],
+                                interests: child.interests
+                              }}
+                              onClick={() => setSelectedChild(child)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sticky Footer with Add New Child Button */}
+                  {!isDonor && (
+                    <div style={{ 
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      width: '100%',
+                      backgroundColor: '#F7F7F7',
+                      padding: '16px 32px',
+                      display: 'flex', 
+                      justifyContent: 'flex-end', 
+                      alignItems: 'center',
+                      borderTop: '1px solid #06404D',
+                      zIndex: 100
+                    }}>
+                      <button
+                        onClick={() => setShowAddChildForm(true)}
+                        style={{
+                          backgroundColor: '#EB8E89',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '8px 16px',
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '16px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          transition: 'background-color 300ms ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#06384D'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = '#EB8E89'
+                        }}
+                      >
+                        ADD NEW CHILD
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Add Child Form Drawer */}
+      {showAddChildForm && (
+        <>
+          {/* Scrim Overlay */}
+          <div
             onClick={() => {
               setShowAddChildForm(false)
               setChildFormData({
@@ -1336,30 +1429,35 @@ function OrganizerUpload() {
               setChildMessage({ text: '', type: '' })
             }}
             style={{
-              position: 'absolute',
-              top: '32px',
-              right: '32px',
-              backgroundColor: '#06384D',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px 16px',
-              fontFamily: "'Manrope', sans-serif",
-              fontSize: '14px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              marginBottom: '24px',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              zIndex: 1000,
+              animation: 'fadeIn 0.3s ease-out'
             }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#052A35'
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#06384D'
+          />
+          
+          {/* Drawer */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: '70%',
+              backgroundColor: '#FFFF',
+              zIndex: 1001,
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '-4px 0 16px rgba(0, 0, 0, 0.1)',
+              animation: 'slideInRight 0.3s ease-out'
             }}
           >
-            Cancel
-          </button>
-          
+            {/* Add Child Form Content - Scrollable */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '32px', paddingBottom: '100px' }}>
           <h2
             style={{
               fontFamily: "'Red Hat Display', sans-serif",
@@ -1388,7 +1486,7 @@ function OrganizerUpload() {
             </div>
           )}
 
-          <form onSubmit={handleChildSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <form id="add-child-form" onSubmit={handleChildSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div>
               <label htmlFor="firstName" style={{
                         fontFamily: "'Manrope', sans-serif",
@@ -1849,163 +1947,103 @@ function OrganizerUpload() {
                         Add Another Wishlist Item
                       </button>
                     </div>
-
-                    <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          setShowAddChildForm(false)
-                          setChildFormData({
-                            firstName: '',
-                            age: '',
-                            gender: '',
-                            clothingShirtSize: '',
-                            clothingPantSize: '',
-                            clothingShoeSize: '',
-                            clothingToyPreference: '',
-                            interests: '',
-                            notes: ''
-                          })
-                          setWishlistItems([{ name: '', description: '', externalLink: '', price: '' }])
-                          setChildMessage({ text: '', type: '' })
-                        }}
-                        style={{
-                          backgroundColor: '#06384D',
-                          color: '#FFFFFF',
-                          border: 'none',
-                          borderRadius: '8px',
-                          padding: '12px 24px',
-                          fontFamily: "'Manrope', sans-serif",
-                          fontSize: '16px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
-                      >
-            Cancel
-          </button>
-                      <button 
-                        type="submit" 
-                        disabled={childLoading || !isChildFormValid()}
-                        style={{
-                          backgroundColor: childLoading || !isChildFormValid() ? '#ccc' : '#FF8FA3',
-                          color: '#FFFFFF',
-                          border: 'none',
-                          borderRadius: '8px',
-                          padding: '12px 24px',
-                          fontFamily: "'Manrope', sans-serif",
-                          fontSize: '16px',
-                          fontWeight: 700,
-                          cursor: childLoading || !isChildFormValid() ? 'not-allowed' : 'pointer',
-                          opacity: childLoading || !isChildFormValid() ? 0.6 : 1,
-                          transition: 'background-color 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!childLoading && isChildFormValid()) {
-                            e.target.style.backgroundColor = '#FF7A95'
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!childLoading && isChildFormValid()) {
-                            e.target.style.backgroundColor = '#FF8FA3'
-                          }
-                        }}
-                      >
-                        {childLoading ? 'Adding...' : 'Add Child'}
-                      </button>
-                    </div>
                   </form>
-                </div>
-              ) : (
-                // Grid View of Children
-                <>
-                  <div className="p-[32px] overflow-y-auto flex-1" style={{ paddingBottom: '80px' }}>
-                    <h2 className="sr-only">Existing Children</h2>
-                    
-                    {loadingChildren ? (
-                      <div className="body-default text-default">Loading children...</div>
-                    ) : children.length === 0 ? (
-                      <div className="body-default text-default">No children added yet. Add a child below.</div>
-                    ) : (
-                      <div 
-                        style={{ 
-                          columnCount: 3,
-                          columnGap: '16px',
-                          columnFill: 'balance'
-                        }}
-                      >
-                        {children.map((child) => (
-                          <div
-                            key={child.id}
-                            style={{
-                              breakInside: 'avoid',
-                              marginBottom: '16px',
-                              pageBreakInside: 'avoid',
-                              WebkitColumnBreakInside: 'avoid'
-                            }}
-                          >
-                            <ChildInfoCard 
-                              child={{
-                                firstName: child.firstName,
-                                age: child.age,
-                                gender: child.gender,
-                                wishlist: child.wishlist || [],
-                                interests: child.interests
-                              }}
-                              onClick={() => setSelectedChild(child)}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Sticky Footer with Add New Child Button */}
-                  {!isDonor && (
-                    <div style={{ 
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      width: '100%',
-                      backgroundColor: '#F7F7F7',
-                      padding: '16px 32px',
-                      display: 'flex', 
-                      justifyContent: 'flex-end', 
-                      alignItems: 'center',
-                      borderTop: '1px solid #06404D',
-                      zIndex: 100
-                    }}>
-                      <button
-                        onClick={() => setShowAddChildForm(true)}
-                        style={{
-                          backgroundColor: '#EB8E89',
-                          color: '#FFFFFF',
-                          border: 'none',
-                          borderRadius: '6px',
-                          padding: '8px 16px',
-                          fontFamily: "'Manrope', sans-serif",
-                          fontSize: '16px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          transition: 'background-color 300ms ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#D87A75'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = '#EB8E89'
-                        }}
-                      >
-                        ADD NEW CHILD
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+            </div>
+            
+            {/* Sticky Footer */}
+            <div style={{ 
+              position: 'sticky',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              width: '100%',
+              backgroundColor: '#F7F7F7',
+              padding: '16px 32px',
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              alignItems: 'center',
+              gap: '16px',
+              borderTop: '1px solid #06404D',
+              zIndex: 100
+            }}>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowAddChildForm(false)
+                  setChildFormData({
+                    firstName: '',
+                    age: '',
+                    gender: '',
+                    clothingShirtSize: '',
+                    clothingPantSize: '',
+                    clothingShoeSize: '',
+                    clothingToyPreference: '',
+                    interests: '',
+                    notes: ''
+                  })
+                  setWishlistItems([{ name: '', description: '', externalLink: '', price: '' }])
+                  setChildMessage({ text: '', type: '' })
+                }}
+                style={{
+                  backgroundColor: '#06384D',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  fontFamily: "'Manrope', sans-serif",
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#0F8F9E'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#06384D'
+                }}
+              >
+                CANCEL
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  const form = document.getElementById('add-child-form')
+                  if (form) {
+                    form.requestSubmit()
+                  }
+                }}
+                disabled={childLoading || !isChildFormValid()}
+                style={{
+                  backgroundColor: childLoading || !isChildFormValid() ? '#ccc' : '#EB8E89',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  fontFamily: "'Manrope', sans-serif",
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  cursor: childLoading || !isChildFormValid() ? 'not-allowed' : 'pointer',
+                  opacity: childLoading || !isChildFormValid() ? 0.6 : 1,
+                  transition: 'background-color 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (!childLoading && isChildFormValid()) {
+                    e.target.style.backgroundColor = '#0F8F9E'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!childLoading && isChildFormValid()) {
+                    e.target.style.backgroundColor = '#EB8E89'
+                  }
+                }}
+              >
+                {childLoading ? 'ADDING...' : 'ADD CHILD'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Drawer Scrim and Content */}
       {selectedChild && (
