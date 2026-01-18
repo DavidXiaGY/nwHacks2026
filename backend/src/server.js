@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import authRoutes from './routes/auth'
+import authRoutes from './routes/auth.js'
 
 dotenv.config()
 
@@ -22,7 +22,7 @@ app.get('/api/health', (req, res) => {
 })
 
 // Global error handler
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err, req, res, next) => {
   console.error('Unhandled error:', err)
   res.status(500).json({
     message: 'Internal server error',
