@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function LoginSignup() {
+  const navigate = useNavigate()
   const [isLogin, setIsLogin] = useState(true)
   const [formData, setFormData] = useState({
     email: '',
@@ -62,8 +64,18 @@ function LoginSignup() {
 
         console.log('Login successful:', data)
         setSuccess(`Welcome back, ${data.user.displayName || data.user.email}! Login successful.`)
-        window.alert(`Welcome back, ${data.user.displayName || data.user.email}! Login successful.`)
-        // TODO: Redirect to dashboard or home page
+        
+        // Redirect based on user role
+        if (data.user.role === 'ORGANIZER') {
+          setTimeout(() => {
+            navigate('/organizer-upload')
+          }, 1000)
+        } else {
+          // TODO: Redirect donators to their dashboard
+          setTimeout(() => {
+            navigate('/')
+          }, 1000)
+        }
         
       } else {
         // Sign-up logic
@@ -101,8 +113,18 @@ function LoginSignup() {
 
         console.log('Sign-up successful:', data)
         setSuccess(`Welcome, ${data.user.displayName}! Your account has been created successfully.`)
-        window.alert(`Welcome, ${data.user.displayName}! Your account has been created successfully.`)
-        // TODO: Redirect to dashboard or home page
+        
+        // Redirect based on user role
+        if (data.user.role === 'ORGANIZER') {
+          setTimeout(() => {
+            navigate('/organizer-upload')
+          }, 1000)
+        } else {
+          // TODO: Redirect donators to their dashboard
+          setTimeout(() => {
+            navigate('/')
+          }, 1000)
+        }
       }
     } catch (err) {
       if (err instanceof TypeError && err.message.includes('fetch')) {
