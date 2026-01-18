@@ -2,13 +2,24 @@ import { Link } from 'react-router-dom'
 
 function Navbar() {
   return (
-    <nav className="bg-[#FFFCFA] border-b border-[#06384D] px-6 py-4 flex items-center justify-between">
+    <nav className="bg-[#FFFCFA] px-4 md:px-6 py-4 flex items-center justify-between">
       {/* Logo/Project Name - Left */}
       <Link 
         to="/" 
-        className="text-2xl font-bold font-redhatdisplay text-[#06384D] hover:text-[#EB8E89] transition-colors duration-300 cursor-pointer"
+        className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-300"
       >
-        Angel Tree
+        {/* Tree Icon */}
+        <svg className="w-6 h-6 md:w-8 md:h-8 text-[#06384D]" viewBox="0 0 100 100" fill="none">
+          <path d="M50 10 L60 30 L50 30 L50 40 L50 30 L40 30 Z" fill="#06384D" />
+          <path d="M50 20 L65 45 L50 45 L50 55 L50 45 L35 45 Z" fill="#06384D" />
+          <path d="M50 35 L70 65 L50 65 L50 75 L50 65 L30 65 Z" fill="#06384D" />
+          <rect x="47" y="75" width="6" height="15" fill="#92400E" />
+          <circle cx="50" cy="5" r="3" fill="#FBBF24" />
+        </svg>
+        <div className="flex flex-col">
+          <span className="text-lg md:text-xl font-bold text-[#06384D]">Angel Tree</span>
+          <span className="text-xs md:text-sm text-[#06384D] opacity-80">for Orphanages</span>
+        </div>
       </Link>
 
       {/* Right side buttons */}
@@ -21,12 +32,12 @@ function Navbar() {
           Browse Listings
         </Link>
 
-        {/* Sign-up/Login Button */}
+        {/* Login Button */}
         <Link
           to="/login"
-          className="px-6 py-2 bg-[#06384D] text-white rounded-lg hover:bg-[#EB8E89] transition-all duration-300 font-medium"
+          className="px-4 md:px-6 py-2 bg-[#EB8E89] text-[#06384D] rounded-lg hover:bg-[#d87d78] transition-all duration-300 font-medium shadow-md text-sm md:text-base"
         >
-          Sign-up/Login
+          Login
         </Link>
       </div>
     </nav>
