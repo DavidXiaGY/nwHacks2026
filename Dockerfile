@@ -6,10 +6,11 @@ WORKDIR /app
 COPY backend/package*.json ./backend/
 COPY backend/.nvmrc ./backend/
 
-# Copy Prisma schema BEFORE installing (needed for postinstall script)
+# Copy Prisma schema and config
 COPY backend/prisma ./backend/prisma
+COPY backend/prisma.config.ts ./backend/
 
-# Install dependencies (this will run postinstall -> prisma generate)
+# Install dependencies (postinstall removed - prisma generate runs at runtime)
 WORKDIR /app/backend
 RUN npm install
 
@@ -19,5 +20,5 @@ COPY backend/ .
 # Expose port
 EXPOSE 3000
 
-# Run migrations and start
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+# Generate Prisma Client and run migrations, then start
+CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && npm start"]
