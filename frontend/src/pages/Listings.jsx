@@ -5,7 +5,7 @@ function Listings(){
         <div className="flex flex-col">
             <div className="header h-[400px] w-full flex flex-col justify-end">
                 <div className="background-img absolute right-[-450px] z-[-1]">
-                    <img src="/src/assets/newTrees.svg" alt="Background"/>
+                    <img src="/src/assets/headerTrees.svg" alt="Background"/>
                 </div>
                 <div className='p-[48px] pb-[48px]'>
                     <h1 className="text-[40px] font-bold font-redhatdisplay">
