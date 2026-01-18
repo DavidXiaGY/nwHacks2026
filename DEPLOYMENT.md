@@ -112,11 +112,19 @@ This guide will help you deploy your full-stack application using **Railway** (b
      - **Build command**: `npm install && npm run build`
      - **Publish directory**: `frontend/dist`
 
-3. **Set Environment Variables**:
+3. **Set Environment Variables** (CRITICAL - Without this, API calls will fail!):
    - Go to "Site configuration" → "Environment variables"
    - Click "Add variable"
-   - Add: `VITE_API_URL` = your Railway backend URL (e.g., `https://your-app.up.railway.app`)
-   - **Important:** Make sure to include `https://` and no trailing slash
+   - **Name:** `VITE_API_URL`
+   - **Value:** Your Railway backend URL (e.g., `https://your-app.up.railway.app`)
+   - **Important:** 
+     - ✅ Must include `https://`
+     - ✅ NO trailing slash (don't end with `/`)
+     - ✅ Should look like: `https://your-backend-name.up.railway.app`
+   - Click "Save"
+   - **After adding, you MUST redeploy** for the variable to take effect:
+     - Go to "Deploys" tab
+     - Click "Trigger deploy" → "Deploy site"
 
 4. **Deploy**:
    - Click "Deploy site"
