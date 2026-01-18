@@ -33,7 +33,6 @@ model User {
   email        String    @unique
   password     String
   displayName  String
-  passwordHash String
   role         UserRole
   createdAt    DateTime  @default(now())
 
@@ -73,8 +72,20 @@ model Child {
   id           String    @id @default(uuid())
   firstName    String
   age          Int?
+  gender       String?   // e.g., "male", "female", "non-binary"
+
+  // Clothing sizes
+  clothingShirtSize  String?
+  clothingPantSize   String?
+  clothingShoeSize   String?
+
+  // Preferences and interests
+  clothingToyPreference String? // e.g., "Masculine", "Feminine", "Neutral"
+  interests            String? // Text description of interests
+  notes               String? // Other notes for the child
 
   createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relations
   orphanageId  String
