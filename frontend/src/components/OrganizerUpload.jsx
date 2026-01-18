@@ -514,7 +514,7 @@ function OrganizerUpload() {
 
   const logout = () => {
     localStorage.clear()
-    navigate('/login')
+    navigate('/')
   }
 
   // Load children for the orphanage

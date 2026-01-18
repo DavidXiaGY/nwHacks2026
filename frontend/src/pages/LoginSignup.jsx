@@ -112,6 +112,8 @@ function LoginSignup() {
         if (data.token) {
           localStorage.setItem('token', data.token)
           localStorage.setItem('user', JSON.stringify(data.user))
+          // Dispatch custom event to notify navbar of auth state change
+          window.dispatchEvent(new Event('authStateChanged'))
         }
 
         console.log('Login successful:', data)
@@ -161,6 +163,8 @@ function LoginSignup() {
         if (data.token) {
           localStorage.setItem('token', data.token)
           localStorage.setItem('user', JSON.stringify(data.user))
+          // Dispatch custom event to notify navbar of auth state change
+          window.dispatchEvent(new Event('authStateChanged'))
         }
 
         console.log('Sign-up successful:', data)
