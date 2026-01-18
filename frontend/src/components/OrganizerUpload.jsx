@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Globe } from 'lucide-react'
 import OrphanageDetailBackground from '../assets/OrphanageDetailBackground.png'
 import ChildInfoCard from './ChildInfoCard'
+import WishlistItemRow from './WishlistItemRow'
 
 function OrganizerUpload() {
   const navigate = useNavigate()
@@ -48,6 +49,7 @@ function OrganizerUpload() {
   const [childMessage, setChildMessage] = useState({ text: '', type: '' })
   const [childLoading, setChildLoading] = useState(false)
   const [loadingChildren, setLoadingChildren] = useState(false)
+  const [selectedChild, setSelectedChild] = useState(null)
 
   const API_BASE_URL = '/api'
 
@@ -736,7 +738,32 @@ function OrganizerUpload() {
 
       <div className="flex flex-row h-screen">
         {/* Left Panel - Back button and Orphanage Info */}
-        <div className="p-[32px] flex flex-col h-full overflow-y-auto flex-[0_0_45%]">
+        <div 
+          className="p-[32px] flex flex-col h-full overflow-y-auto flex-[0_0_45%]"
+          style={{
+            position: 'relative',
+            opacity: selectedChild ? 0.4 : 1,
+            transition: 'opacity 0.3s ease',
+          }}
+        >
+          {/* Dark overlay when child is selected - clickable to close */}
+          {selectedChild && (
+            <div
+              onClick={() => setSelectedChild(null)}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                zIndex: 10,
+                cursor: 'pointer',
+              }}
+            />
+          )}
+          {/* Content - visible but dimmed when child is selected */}
+          <div style={{ position: 'relative', zIndex: selectedChild ? 0 : 'auto', pointerEvents: selectedChild ? 'none' : 'auto' }}>
           <div className="mb-6">
             <button 
               type="button" 
@@ -1002,6 +1029,7 @@ function OrganizerUpload() {
               )
             })()}
           </form>
+          </div>
         </div>
 
         {/* Background Image - Absolute positioned at bottom of viewport */}
@@ -1014,30 +1042,283 @@ function OrganizerUpload() {
         </div>
 
         {/* Right Panel */}
-        <div className="flex-1 bg-surface-secondary p-[32px] h-full overflow-y-auto min-w-0">
+        <div className="flex-1 bg-surface-secondary p-[32px] h-full overflow-y-auto min-w-0" style={{ position: 'relative' }}>
           {existingOrphanageId && (
             <>
-              <h2 className="sr-only">Existing Children</h2>
-              
-              {loadingChildren ? (
-                <div className="body-default text-default">Loading children...</div>
-              ) : children.length === 0 ? (
-                <div className="body-default text-default">No children added yet. Add a child above.</div>
-              ) : (
-                <div className="grid grid-cols-3 gap-4" style={{ alignItems: 'start' }}>
-                  {children.map((child) => (
-                    <ChildInfoCard 
-                      key={child.id}
-                      child={{
-                        firstName: child.firstName,
-                        age: child.age,
-                        gender: child.gender,
-                        wishlist: child.wishlist || [],
-                        interests: child.interests
+              {selectedChild ? (
+                // Detailed Child View
+                <div className="flex flex-row gap-6" style={{ position: 'relative', minHeight: 'calc(100% - 64px)', paddingBottom: '80px' }}>
+                  {/* Center - Child Details with Wishlist */}
+                  <div className="flex-1 min-w-0" style={{ maxWidth: '45%' }}>
+                    {/* Child Name */}
+                    <h2
+                      style={{
+                        fontFamily: "'Red Hat Display', sans-serif",
+                        fontSize: '48px',
+                        fontWeight: 900,
+                        lineHeight: '120%',
+                        color: '#06404D',
+                        textTransform: 'uppercase',
+                        marginBottom: '8px',
                       }}
-                    />
-                  ))}
+                    >
+                      {selectedChild.firstName?.toUpperCase() || 'CHILD'}
+                    </h2>
+                    
+                    {/* Age and Gender */}
+                    {(selectedChild.age != null || (selectedChild.gender != null && String(selectedChild.gender).trim() !== '')) && (
+                      <p
+                        style={{
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '16px',
+                          fontWeight: 400,
+                          lineHeight: '140%',
+                          color: '#06404D',
+                          marginBottom: '32px',
+                        }}
+                      >
+                        {selectedChild.age != null ? `${selectedChild.age} years old` : ''}
+                        {selectedChild.age != null && selectedChild.gender != null && String(selectedChild.gender).trim() !== '' ? ', ' : ''}
+                        {selectedChild.gender != null && String(selectedChild.gender).trim() !== '' ? String(selectedChild.gender) : ''}
+                      </p>
+                    )}
+                    
+                    {/* Wishlist Section */}
+                    <div style={{ marginBottom: '32px' }}>
+                      <h3
+                        style={{
+                          fontFamily: "'Red Hat Display', sans-serif",
+                          fontSize: '24px',
+                          fontWeight: 900,
+                          lineHeight: '120%',
+                          color: '#06404D',
+                          marginBottom: '16px',
+                        }}
+                      >
+                        Wishlist
+                      </h3>
+                      
+                      {selectedChild.wishlist && selectedChild.wishlist.length > 0 ? (
+                        <div>
+                          {selectedChild.wishlist.map((item) => (
+                            <WishlistItemRow key={item.id} item={item} />
+                          ))}
+                        </div>
+                      ) : (
+                        <p
+                          style={{
+                            fontFamily: "'Manrope', sans-serif",
+                            fontSize: '16px',
+                            fontWeight: 400,
+                            color: '#06404D',
+                          }}
+                        >
+                          No wishlist items yet.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Right - Additional Child Details */}
+                  <div className="flex-[0_0_300px]" style={{ position: 'relative' }}>
+                    {/* White Box Container */}
+                    <div
+                      style={{
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: '24px',
+                        padding: '24px',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                        border: '1px solid rgba(0, 0, 0, 0.05)',
+                      }}
+                    >
+                      {/* Clothing Sizes */}
+                      {(selectedChild.clothingShirtSize || selectedChild.clothingPantSize || selectedChild.clothingShoeSize) && (
+                        <div style={{ marginBottom: '32px' }}>
+                          <h4
+                            style={{
+                              fontFamily: "'Red Hat Display', sans-serif",
+                              fontSize: '14px',
+                              fontWeight: 900,
+                              lineHeight: '100%',
+                              letterSpacing: '0.42px',
+                              color: '#EB8E89',
+                              textTransform: 'uppercase',
+                              marginBottom: '12px',
+                            }}
+                          >
+                            CLOTHING SIZES
+                          </h4>
+                          <div
+                            style={{
+                              fontFamily: "'Manrope', sans-serif",
+                              fontSize: '16px',
+                              fontWeight: 400,
+                              lineHeight: '140%',
+                              color: '#06404D',
+                            }}
+                          >
+                            {selectedChild.clothingShirtSize && (
+                              <p style={{ marginBottom: '4px' }}>Shirt size: {selectedChild.clothingShirtSize}</p>
+                            )}
+                            {selectedChild.clothingPantSize && (
+                              <p style={{ marginBottom: '4px' }}>Pant size: {selectedChild.clothingPantSize}</p>
+                            )}
+                            {selectedChild.clothingShoeSize && (
+                              <p style={{ marginBottom: '4px' }}>Shoe size: {selectedChild.clothingShoeSize}</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Clothing & Toy Preference */}
+                      {selectedChild.clothingToyPreference && (
+                        <div style={{ marginBottom: '32px' }}>
+                          <h4
+                            style={{
+                              fontFamily: "'Red Hat Display', sans-serif",
+                              fontSize: '14px',
+                              fontWeight: 900,
+                              lineHeight: '100%',
+                              letterSpacing: '0.42px',
+                              color: '#EB8E89',
+                              textTransform: 'uppercase',
+                              marginBottom: '12px',
+                            }}
+                          >
+                            CLOTHING & TOY PREFERENCE
+                          </h4>
+                          <p
+                            style={{
+                              fontFamily: "'Manrope', sans-serif",
+                              fontSize: '16px',
+                              fontWeight: 400,
+                              lineHeight: '140%',
+                              color: '#06404D',
+                            }}
+                          >
+                            {selectedChild.clothingToyPreference}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Interests */}
+                      {selectedChild.interests && (
+                        <div style={{ marginBottom: '32px' }}>
+                          <h4
+                            style={{
+                              fontFamily: "'Red Hat Display', sans-serif",
+                              fontSize: '14px',
+                              fontWeight: 900,
+                              lineHeight: '100%',
+                              letterSpacing: '0.42px',
+                              color: '#EB8E89',
+                              textTransform: 'uppercase',
+                              marginBottom: '12px',
+                            }}
+                          >
+                            INTERESTS
+                          </h4>
+                          <p
+                            style={{
+                              fontFamily: "'Manrope', sans-serif",
+                              fontSize: '16px',
+                              fontWeight: 400,
+                              lineHeight: '140%',
+                              color: '#06404D',
+                            }}
+                          >
+                            {selectedChild.interests}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Other Notes */}
+                      <div style={{ marginBottom: '0px' }}>
+                        <h4
+                          style={{
+                            fontFamily: "'Red Hat Display', sans-serif",
+                            fontSize: '14px',
+                            fontWeight: 900,
+                            lineHeight: '100%',
+                            letterSpacing: '0.42px',
+                            color: '#EB8E89',
+                            textTransform: 'uppercase',
+                            marginBottom: '12px',
+                          }}
+                        >
+                          OTHER NOTES
+                        </h4>
+                        <p
+                          style={{
+                            fontFamily: "'Manrope', sans-serif",
+                            fontSize: '16px',
+                            fontWeight: 400,
+                            lineHeight: '140%',
+                            color: '#06404D',
+                          }}
+                        >
+                          {selectedChild.notes || 'No notes added.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Close Button - positioned at bottom right */}
+                  <button
+                    onClick={() => setSelectedChild(null)}
+                    style={{
+                      position: 'fixed',
+                      bottom: '32px',
+                      right: '32px',
+                      backgroundColor: '#06384D',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '12px 24px',
+                      fontFamily: "'Manrope', sans-serif",
+                      fontSize: '16px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      zIndex: 1000,
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#052A35'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#06384D'
+                    }}
+                  >
+                    Close
+                  </button>
                 </div>
+              ) : (
+                // Grid View of Children
+                <>
+                  <h2 className="sr-only">Existing Children</h2>
+                  
+                  {loadingChildren ? (
+                    <div className="body-default text-default">Loading children...</div>
+                  ) : children.length === 0 ? (
+                    <div className="body-default text-default">No children added yet. Add a child above.</div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-4" style={{ alignItems: 'start' }}>
+                      {children.map((child) => (
+                        <ChildInfoCard 
+                          key={child.id}
+                          child={{
+                            firstName: child.firstName,
+                            age: child.age,
+                            gender: child.gender,
+                            wishlist: child.wishlist || [],
+                            interests: child.interests
+                          }}
+                          onClick={() => setSelectedChild(child)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
