@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Globe } from 'lucide-react'
 import OrphanageDetailBackground from '../assets/OrphanageDetailBackground.png'
@@ -15,12 +16,14 @@ function OrganizerUpload() {
     website: '',
     contactEmail: '',
     address: ''
+    address: ''
   })
   const [originalFormData, setOriginalFormData] = useState({
     name: '',
     description: '',
     website: '',
     contactEmail: '',
+    address: ''
     address: ''
   })
   const [coordinates, setCoordinates] = useState({ latitude: null, longitude: null })
@@ -103,15 +106,28 @@ function OrganizerUpload() {
             })
             // Pre-fill form with existing data
             // Note: We'll need to reverse geocode to get address, but for now just store coordinates
+            // Note: We'll need to reverse geocode to get address, but for now just store coordinates
             const orphanageData = {
               name: existingOrphanage.name || '',
               description: existingOrphanage.description || '',
               website: existingOrphanage.website || '',
               contactEmail: existingOrphanage.contactEmail || '',
               address: '' // Will be reverse geocoded if needed
+              address: '' // Will be reverse geocoded if needed
             }
             setFormData(orphanageData)
             setOriginalFormData(orphanageData)
+            // Store coordinates for existing orphanage
+            if (existingOrphanage.latitude && existingOrphanage.longitude) {
+              const coords = {
+                latitude: existingOrphanage.latitude,
+                longitude: existingOrphanage.longitude
+              }
+              setCoordinates(coords)
+              setOriginalCoordinates(coords)
+              // Reverse geocode to get address
+              reverseGeocode(existingOrphanage.latitude, existingOrphanage.longitude)
+            }
             // Store coordinates for existing orphanage
             if (existingOrphanage.latitude && existingOrphanage.longitude) {
               const coords = {
@@ -248,11 +264,8 @@ function OrganizerUpload() {
     setGeocoding(true)
     try {
       // Use Nominatim API (OpenStreetMap) - free and no API key required
-      // Nominatim returns results sorted by relevance by default, so we trust the first result
-      // Add addressdetails=1 for better structured results
-      // Add countrycodes to limit to common countries (can be expanded)
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&addressdetails=1&limit=1&accept-language=en&countrycodes=ca,us`,
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
         {
           headers: {
             'User-Agent': 'OrphanageApp/1.0' // Required by Nominatim
@@ -270,7 +283,6 @@ function OrganizerUpload() {
         throw new Error('Address not found. Please try a more specific address.')
       }
 
-      // Use the first result - Nominatim already sorts by relevance
       const result = data[0]
       const lat = parseFloat(result.lat)
       const lng = parseFloat(result.lon)
@@ -278,14 +290,6 @@ function OrganizerUpload() {
       if (isNaN(lat) || isNaN(lng)) {
         throw new Error('Invalid coordinates returned')
       }
-
-      // Log the result for debugging (can be removed in production)
-      console.log('Geocoding result:', {
-        address: result.display_name,
-        type: result.type,
-        importance: result.importance,
-        hasHousenumber: !!result.address?.housenumber
-      })
 
       setCoordinates({ latitude: lat, longitude: lng })
       return { latitude: lat, longitude: lng }
@@ -301,6 +305,9 @@ function OrganizerUpload() {
   // Validation function to check if all required fields are filled
   const isFormValid = () => {
     return formData.name.trim() !== '' && 
+           formData.address.trim() !== '' &&
+           coordinates.latitude !== null &&
+           coordinates.longitude !== null
            formData.address.trim() !== '' &&
            coordinates.latitude !== null &&
            coordinates.longitude !== null
@@ -330,11 +337,27 @@ function OrganizerUpload() {
       }
     }
 
+    // Geocode address if we don't have coordinates yet
+    if (!coordinates.latitude || !coordinates.longitude) {
+      try {
+        const coords = await geocodeAddress(formData.address)
+        if (!coords) {
+          setMessage({ text: 'Please enter a valid address.', type: 'error' })
+          return
+        }
+      } catch (error) {
+        setMessage({ text: error.message || 'Failed to geocode address. Please check the address and try again.', type: 'error' })
+        return
+      }
+    }
+
     const submitData = {
       name: formData.name,
       description: formData.description || undefined,
       website: formData.website || undefined,
       contactEmail: formData.contactEmail || undefined,
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude
       latitude: coordinates.latitude,
       longitude: coordinates.longitude
     }
@@ -383,6 +406,13 @@ function OrganizerUpload() {
       setOriginalCoordinates({
         latitude: coordinates.latitude,
         longitude: coordinates.longitude
+        address: formData.address
+      })
+      
+      // Update original coordinates to reflect saved state
+      setOriginalCoordinates({
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude
       })
 
       setMessage({ text: 'Orphanage information saved successfully!', type: 'success' })
@@ -400,7 +430,9 @@ function OrganizerUpload() {
   }
 
   const handleCancel = async () => {
+  const handleCancel = async () => {
     // Restore original form data
+    const restoredAddress = originalFormData.address
     const restoredAddress = originalFormData.address
     setFormData({
       name: originalFormData.name,
@@ -408,7 +440,9 @@ function OrganizerUpload() {
       website: originalFormData.website,
       contactEmail: originalFormData.contactEmail,
       address: restoredAddress
+      address: restoredAddress
     })
+    
     
     // Clear any messages
     setMessage({ text: '', type: '' })
