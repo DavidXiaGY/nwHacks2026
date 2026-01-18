@@ -29,7 +29,7 @@ function Home() {
           </p>
           <Link
             to="/map"
-            className="mt-[40px] px-[16px] py-[8px] bg-[#EB8E89] text-white rounded-[6px] body-default !font-bold hover:bg-[#d87d78] transition-all duration-300"
+            className="mt-[40px] px-[16px] py-[8px] bg-[#EB8E89] text-white rounded-[6px] body-default !font-bold hover:bg-[#06384D] transition-all duration-300"
           >
             FIND AN ORPHANAGE
           </Link>
