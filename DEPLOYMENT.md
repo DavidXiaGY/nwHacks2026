@@ -43,21 +43,35 @@ This guide will help you deploy your full-stack application using **Railway** (b
      - `NODE_ENV=production`
 
 6. **Run Database Migrations**:
-   - Go to your backend service → "Deployments" → Click on the latest deployment
-   - Click "View Logs" → Click the three dots → "Open Shell"
+   
+   **✅ Automatic (Recommended):** Migrations are already configured to run automatically! The `railway.json` and `nixpacks.toml` files include migration commands in the start script, so migrations will run automatically on each deployment. No manual action needed!
+   
+   **Manual Option (if needed):** If you need to run migrations manually:
+   - Go to your **backend application service** (NOT the Postgres database service)
+   - Click on the service name in your Railway project
+   - Go to "Deployments" tab → Click on the latest deployment
+   - Click "View Logs" → Look for the three dots (⋯) menu → "Open Shell"
    - Run:
      ```bash
-     cd backend
      npx prisma migrate deploy
-     npx prisma generate
      ```
-   - Or add a build command in Railway settings:
-     - Build Command: `cd backend && npm install && npx prisma generate`
-     - Start Command: `cd backend && npx prisma migrate deploy && npm start`
+   - Note: The shell option is only available for application services, not database services
 
-7. **Get Your Backend URL**:
-   - Railway will give you a URL like: `https://your-app.up.railway.app`
-   - Copy this URL - you'll need it for the frontend
+7. **Get Your Backend URL** (after successful deployment):
+   
+   **⚠️ Important:** Your backend must be successfully deployed first! If you see "Build failed" on your service, fix that first (see Troubleshooting below).
+   
+   **To find the URL:**
+   - On the Railway dashboard, **click on your backend service card** (the one with your project name, e.g., "nwHacks2026" - NOT the Postgres service)
+   - This will take you to the service details page
+   - Click on the **"Settings"** tab
+   - Scroll down to the **"Networking"** or **"Domains"** section
+   - You'll see a **"Public Domain"** field or a **"Generate Domain"** button
+   - If no domain is shown, click **"Generate Domain"** to create one
+   - Copy the URL (it will look like: `https://your-app-name.up.railway.app`)
+   - **Important:** Make sure to copy the full URL including `https://` - you'll need this for the frontend's `VITE_API_URL` environment variable
+   
+   **Alternative:** The URL might also be visible on the service's main page under "Public Domain" or in the "Variables" tab as `RAILWAY_PUBLIC_DOMAIN`
 
 ## Step 2: Deploy Frontend to Vercel
 
@@ -111,6 +125,7 @@ The frontend is already configured to use `VITE_API_URL` environment variable. M
 - **Database connection errors**: Check `DATABASE_URL` is set correctly
 - **Migration errors**: Run `npx prisma migrate deploy` in Railway shell
 - **Port errors**: Railway sets `PORT` automatically, don't override it
+- **Node.js version errors**: The project requires Node.js 20.19+ (configured via `.nvmrc` and `package.json` engines). Railway should auto-detect this, but if issues persist, check Railway service settings.
 
 ### Frontend Issues
 - **API calls failing**: Check `VITE_API_URL` is set correctly in Vercel
