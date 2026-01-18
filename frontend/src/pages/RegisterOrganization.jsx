@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import RegisterBackground from '../assets/RegisterBackground.png'
+import { API_BASE_URL } from '../config.js'
 
 // Styles for placeholder text
 const placeholderStyle = `
@@ -57,7 +58,7 @@ function RegisterOrganization() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

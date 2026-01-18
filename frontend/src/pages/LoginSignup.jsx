@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import LoginBackground from '../assets/LoginBackground.png'
 import RegisterBackground from '../assets/RegisterBackground.png'
+import { API_BASE_URL } from '../config.js'
 
 // Styles for placeholder text
 const placeholderStyle = `
@@ -104,7 +105,7 @@ function LoginSignup() {
     try {
       if (isLogin) {
         // Login logic
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -153,7 +154,7 @@ function LoginSignup() {
         
       } else {
         // Sign-up logic
-        const response = await fetch('/api/auth/signup', {
+        const response = await fetch(`${API_BASE_URL}/auth/signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

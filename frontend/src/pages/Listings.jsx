@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import OrphanageCard from '../components/OrphanageCard'
+import { API_BASE_URL } from '../config.js'
 
 function Listings(){
     const [orphanages, setOrphanages] = useState([])
@@ -15,7 +16,7 @@ function Listings(){
     const fetchOrphanages = async () => {
         try {
             setLoading(true)
-            const response = await fetch('/api/orphanages')
+            const response = await fetch(`${API_BASE_URL}/orphanages`)
             if (!response.ok) {
                 throw new Error('Failed to fetch orphanages')
             }

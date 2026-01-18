@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import OrphanageCard from '../components/OrphanageCard'
+import { API_BASE_URL } from '../config.js'
 
 // Fix for default marker icons in React
 delete L.Icon.Default.prototype._getIconUrl
@@ -102,7 +103,7 @@ function InteractiveMap() {
   const fetchOrphanages = async (lat, lng) => {
     try {
       setLoading(true)
-      const response = await fetch(`http://localhost:3000/api/orphanages?lat=${lat}&lng=${lng}`)
+      const response = await fetch(`${API_BASE_URL}/orphanages?lat=${lat}&lng=${lng}`)
       if (!response.ok) {
         throw new Error('Failed to fetch orphanages')
       }

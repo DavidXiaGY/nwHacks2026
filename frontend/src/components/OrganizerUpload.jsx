@@ -5,6 +5,7 @@ import OrphanageDetailBackground from '../assets/OrphanageDetailBackground.png'
 import ChildInfoCard from './ChildInfoCard'
 import WishlistItemRow from './WishlistItemRow'
 import DonationPopup from './DonationPopup'
+import { API_BASE_URL } from '../config.js'
 
 function OrganizerUpload() {
   const navigate = useNavigate()
@@ -60,8 +61,6 @@ function OrganizerUpload() {
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [selectedDonationItem, setSelectedDonationItem] = useState(null)
   const [popupItemWithHold, setPopupItemWithHold] = useState(null)
-
-  const API_BASE_URL = '/api'
 
   useEffect(() => {
     // Check if user is logged in
