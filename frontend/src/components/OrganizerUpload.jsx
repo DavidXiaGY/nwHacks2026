@@ -129,6 +129,38 @@ function OrganizerUpload() {
     }
   }
 
+  // Reverse geocode coordinates to address
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+        {
+          headers: {
+            'User-Agent': 'OrphanageApp/1.0'
+          }
+        }
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.display_name) {
+          const address = data.display_name
+          setFormData(prev => ({
+            ...prev,
+            address: address
+          }))
+          setOriginalFormData(prev => ({
+            ...prev,
+            address: address
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Reverse geocoding error:', error)
+      // Don't throw - this is optional
+    }
+  }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -193,38 +225,6 @@ function OrganizerUpload() {
       throw error
     } finally {
       setGeocoding(false)
-    }
-  }
-
-  // Reverse geocode coordinates to address
-  const reverseGeocode = async (lat, lng) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
-        {
-          headers: {
-            'User-Agent': 'OrphanageApp/1.0'
-          }
-        }
-      )
-
-      if (response.ok) {
-        const data = await response.json()
-        if (data.display_name) {
-          const address = data.display_name
-          setFormData(prev => ({
-            ...prev,
-            address: address
-          }))
-          setOriginalFormData(prev => ({
-            ...prev,
-            address: address
-          }))
-        }
-      }
-    } catch (error) {
-      console.error('Reverse geocoding error:', error)
-      // Don't throw - this is optional
     }
   }
 
