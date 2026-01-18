@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .font-heading {
+    font-family: 'Red Hat Display', sans-serif;
+  }
+  
+  .font-body {
+    font-family: 'Manrope', sans-serif;
+  }
+}
