@@ -5,6 +5,7 @@ import OrganizerUpload from './components/OrganizerUpload'
 import Listings from './pages/Listings'
 import OrphanageDetails from './pages/OrphanageDetails'
 import InteractiveMap from './pages/InteractiveMap'
+import Home from './pages/Home'
 import Navbar from './components/Navbar'
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
     <div>
       <Navbar />
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginSignup />} />
         <Route path="/organizer-upload" element={<OrganizerUpload />} />
         <Route path="/listings" element={<Listings />} />
