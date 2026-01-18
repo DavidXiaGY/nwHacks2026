@@ -2,6 +2,10 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth.js'
+import childrenRoutes from './routes/children.js'
+import orphanagesRoutes from './routes/orphanages.js'
+import wishlistRoutes from './routes/wishlist.js'
+import donationsRoutes from './routes/donations.js'
 
 dotenv.config()
 
@@ -15,6 +19,10 @@ app.use(express.urlencoded({ extended: true }))
 
 // Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/children', childrenRoutes)
+app.use('/api/orphanages', orphanagesRoutes)
+app.use('/api/wishlist', wishlistRoutes)
+app.use('/api/donations', donationsRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {
