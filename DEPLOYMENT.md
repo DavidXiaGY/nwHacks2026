@@ -36,11 +36,17 @@ This guide will help you deploy your full-stack application using **Railway** (b
 
 5. **Set Environment Variables**:
    - Go to your backend service → "Variables" tab
-   - Add these variables:
-     - `DATABASE_URL` (already set by Railway from PostgreSQL)
+   - **IMPORTANT:** Check that `DATABASE_URL` is automatically set by Railway from your PostgreSQL service
+     - If `DATABASE_URL` is NOT there, you need to link the PostgreSQL service:
+       - In your backend service → "Variables" tab → Click "New Variable"
+       - Railway should show a "Reference" option - select your PostgreSQL service
+       - This will create `DATABASE_URL` automatically
+     - Or manually: Go to PostgreSQL service → "Variables" tab → Copy the `DATABASE_URL` → Paste it in backend service variables
+   - Add these additional variables:
      - `JWT_SECRET` - Generate a random secret: `openssl rand -base64 32`
-     - `PORT` - Railway sets this automatically, but you can leave it
      - `NODE_ENV=production`
+     - `PORT` - Railway sets this automatically, don't override it
+     - `FRONTEND_URL` - You'll add this after frontend deploys (e.g., `https://your-app.vercel.app`)
 
 6. **Run Database Migrations**:
    
