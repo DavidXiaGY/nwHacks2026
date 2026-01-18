@@ -41,6 +41,20 @@ router.get('/orphanage/:orphanageId', async (req, res, next) => {
       }
     })
 
+    // Debug: log what we're returning
+    if (children.length > 0) {
+      const firstChild = children[0]
+      console.log('=== CHILDREN API DEBUG ===')
+      console.log('Total children:', children.length)
+      console.log('First child keys:', Object.keys(firstChild))
+      console.log('First child full object:', JSON.stringify(firstChild, null, 2))
+      console.log('First child gender:', firstChild.gender, 'type:', typeof firstChild.gender)
+      console.log('First child interests:', firstChild.interests, 'type:', typeof firstChild.interests)
+      console.log('First child age:', firstChild.age, 'type:', typeof firstChild.age)
+      console.log('First child firstName:', firstChild.firstName, 'type:', typeof firstChild.firstName)
+      console.log('========================')
+    }
+
     res.json(children)
   } catch (error) {
     next(error)
