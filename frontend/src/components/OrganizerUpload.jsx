@@ -1973,7 +1973,7 @@ function OrganizerUpload() {
                       justifyContent: 'flex-end', 
                       alignItems: 'center',
                       borderTop: '1px solid #06404D',
-                      zIndex: 10
+                      zIndex: 100
                     }}>
                       <button
                         onClick={() => setShowAddChildForm(true)}
@@ -1987,6 +1987,7 @@ function OrganizerUpload() {
                           fontSize: '16px',
                           fontWeight: 700,
                           cursor: 'pointer',
+                          transition: 'background-color 300ms ease'
                         }}
                         onMouseEnter={(e) => {
                           e.target.style.backgroundColor = '#D87A75'
@@ -2031,8 +2032,8 @@ function OrganizerUpload() {
               top: 0,
               right: 0,
               bottom: 0,
-              width: '50%',
-              backgroundColor: '#F7F7F7',
+              width: '70%',
+              backgroundColor: '#FFFF',
               zIndex: 1001,
               overflowY: 'auto',
               padding: '32px',
@@ -2041,9 +2042,9 @@ function OrganizerUpload() {
             }}
           >
             {/* Detailed Child View */}
-            <div className="flex flex-row gap-6" style={{ position: 'relative', minHeight: 'calc(100% - 64px)', paddingBottom: '80px' }}>
+            <div className="flex flex-row gap-6" style={{ position: 'relative', minHeight: 'calc(100% - 64px)', paddingBottom: '80px', alignItems: 'stretch' }}>
                   {/* Center - Child Details with Wishlist */}
-                  <div className="flex-1 min-w-0" style={{ maxWidth: '45%' }}>
+                  <div className="flex-1 min-w-0" style={{ display: 'flex', flexDirection: 'column' }}>
                     {/* Child Name */}
                     <h2
                       style={{
@@ -2064,7 +2065,7 @@ function OrganizerUpload() {
                       <p
                         style={{
                           fontFamily: "'Manrope', sans-serif",
-                          fontSize: '16px',
+                          fontSize: '24px',
                           fontWeight: 400,
                           lineHeight: '140%',
                           color: '#06404D',
@@ -2078,57 +2079,86 @@ function OrganizerUpload() {
                     )}
                     
                     {/* Wishlist Section */}
-                    <div style={{ marginBottom: '32px' }}>
-                      <h3
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                      {selectedChild.wishlist && selectedChild.wishlist.length > 0 ? (
+                        <div
+                          style={{
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: '8px',
+                            padding: '24px',
+                            border: '1px solid #E9E9E9',
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            minHeight: 0
+                          }}
+                        >
+                          <h3
                         style={{
                           fontFamily: "'Red Hat Display', sans-serif",
-                          fontSize: '24px',
+                          fontSize: '32px',
                           fontWeight: 900,
                           lineHeight: '120%',
                           color: '#06404D',
-                          marginBottom: '16px',
+                          marginBottom: '24px',
                         }}
                       >
                         Wishlist
                       </h3>
-                      
-                      {selectedChild.wishlist && selectedChild.wishlist.length > 0 ? (
-                        <div>
-                          {selectedChild.wishlist.map((item) => (
+                          {selectedChild.wishlist.map((item, index) => (
                             <WishlistItemRow 
                               key={item.id} 
                               item={item}
                               currentUserId={user?.id}
                               onDonateItem={isDonor ? handleDonateItem : undefined}
                               onDropDonation={isDonor ? handleDropDonation : undefined}
+                              isLast={index === selectedChild.wishlist.length - 1}
                             />
                           ))}
                         </div>
                       ) : (
-                        <p
+                        <div
                           style={{
-                            fontFamily: "'Manrope', sans-serif",
-                            fontSize: '16px',
-                            fontWeight: 400,
-                            color: '#06404D',
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: '8px',
+                            padding: '24px',
+                            border: '1px solid #E9E9E9',
+                            flex: 1
                           }}
                         >
-                          No wishlist items yet.
-                        </p>
+                          <p
+                            style={{
+                              fontFamily: "'Manrope', sans-serif",
+                              fontSize: '16px',
+                              fontWeight: 400,
+                              color: '#06404D',
+                              textAlign: 'center'
+                            }}
+                          >
+                            No wishlist items yet.
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
                   
                   {/* Right - Additional Child Details */}
-                  <div className="flex-[0_0_300px]" style={{ position: 'relative' }}>
+                  <div className="flex-1 min-w-0" style={{ display: 'flex', flexDirection: 'column' }}>
+                    {/* Spacer to align with header */}
+                    <div style={{ 
+                      height: (selectedChild.age != null || (selectedChild.gender != null && String(selectedChild.gender).trim() !== '')) ? '132px' : '66px',
+                      flexShrink: 0
+                    }} />
                     {/* White Box Container */}
                     <div
                       style={{
-                        backgroundColor: '#FFFFFF',
-                        borderRadius: '24px',
+                        backgroundColor: '#F7F7F7',
+                        borderRadius: '8px',
                         padding: '24px',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                        border: '1px solid rgba(0, 0, 0, 0.05)',
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        minHeight: 0
                       }}
                     >
                       {/* Clothing Sizes */}
@@ -2274,23 +2304,23 @@ function OrganizerUpload() {
                   backgroundColor: '#06384D',
                   color: '#FFFFFF',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   padding: '12px 24px',
                   fontFamily: "'Manrope', sans-serif",
                   fontSize: '16px',
                   fontWeight: 700,
                   cursor: 'pointer',
                   zIndex: 1002,
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  transition: 'background-color 300ms ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#052A35'
+                  e.target.style.backgroundColor = '#EB8E89'
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.backgroundColor = '#06384D'
                 }}
               >
-                Close
+                CLOSE
               </button>
           </div>
         </>

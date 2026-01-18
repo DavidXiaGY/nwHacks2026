@@ -133,6 +133,18 @@ function InteractiveMap() {
     navigate(`/organizer-upload?orphanageId=${orphanageId}`)
   }
 
+  // Available icons
+  const icons = [
+    '/src/assets/holly.svg',
+    '/src/assets/mitten.svg',
+    '/src/assets/snowflake.svg'
+  ]
+  
+  // Get random icon for each card
+  const getRandomIcon = () => {
+    return icons[Math.floor(Math.random() * icons.length)]
+  }
+
   // Format location for OrphanageCard
   const formatLocation = (orphanage) => {
     if (orphanage.distance !== undefined) {
@@ -185,7 +197,7 @@ function InteractiveMap() {
 
       <div className="flex-1 flex relative">
         {/* Orphanage List Sidebar */}
-        <div className="w-96 bg-[#FFFCFA] border-r border-[#06404D] overflow-y-auto">
+        <div className="w-[500px] bg-[#FFFCFA] border-r border-[#06404D] overflow-y-auto">
           <div className="p-4 sticky top-0 bg-[#FFFCFA] border-b border-[#06404D] z-10">
             <h2 className="heading-lg text-default mb-2">
               Orphanages
@@ -222,6 +234,7 @@ function InteractiveMap() {
                       angelCount: orphanage.children ? orphanage.children.length : 0,
                     }}
                     onViewAngels={() => handleViewAngels(orphanage.id)}
+                    icon={getRandomIcon()}
                   />
                 </div>
               ))
