@@ -117,7 +117,7 @@ function DonationPopup({ item, childName, isOpen, onClose, onConfirm }) {
       <div
         style={{
           backgroundColor: '#FFFFFF',
-          borderRadius: '12px',
+          borderRadius: '0px',
           padding: '32px',
           maxWidth: '500px',
           width: '90%',
@@ -126,6 +126,56 @@ function DonationPopup({ item, childName, isOpen, onClose, onConfirm }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header Row - Proof of Purchase (left) and Timer (right) */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            marginBottom: '0px',
+          }}
+        >
+          {/* Proof of Purchase - Top Left */}
+          <h2
+            style={{
+              fontFamily: "'Manrope', sans-serif",
+              fontSize: '16px',
+              fontWeight: 400,
+              color: '#06404D',
+              margin: 0,
+            }}
+          >
+            Proof of Purchase
+          </h2>
+
+          {/* Timer - Top Right */}
+          {timeRemaining ? (
+            <p
+              style={{
+                fontFamily: "'Manrope', sans-serif",
+                fontSize: '16px',
+                fontWeight: 400,
+                color: '#F2ABA7',
+                margin: 0,
+              }}
+            >
+              {formatTime(timeRemaining)} left
+            </p>
+          ) : (
+            <p
+              style={{
+                fontFamily: "'Manrope', sans-serif",
+                fontSize: '16px',
+                fontWeight: 400,
+                color: '#F2ABA7',
+                margin: 0,
+              }}
+            >
+              Expired
+            </p>
+          )}
+        </div>
+
         {/* Title - Item Name */}
         <h1
           style={{
@@ -133,82 +183,24 @@ function DonationPopup({ item, childName, isOpen, onClose, onConfirm }) {
             fontSize: '32px',
             fontWeight: 900,
             color: '#06404D',
-            marginBottom: '8px',
+            marginBottom: '24px',
           }}
         >
           {item?.name || 'Item'}
         </h1>
 
-        {/* Subtitle - Proof of Purchase */}
-        <p
+        {/* Upload Heading */}
+        <h3
           style={{
-            fontFamily: "'Red Hat Display', sans-serif",
-            fontSize: '16px',
-            fontWeight: 400,
-            color: '#06404D',
-            marginBottom: '24px',
+            fontFamily: "'Manrope', sans-serif",
+            fontSize: '14px',
+            fontWeight: 700,
+            color: '#EB8E89',
+            marginBottom: '8px',
           }}
         >
-          Proof of Purchase
-        </p>
-
-        {/* Timer Display */}
-        {timeRemaining ? (
-          <div
-            style={{
-              backgroundColor: '#FFF4E6',
-              border: '1px solid #F2ABA7',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              marginBottom: '24px',
-              textAlign: 'center',
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "'Manrope', sans-serif",
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#06404D',
-                marginBottom: '4px',
-              }}
-            >
-              Item reserved for:
-            </p>
-            <p
-              style={{
-                fontFamily: "'Red Hat Display', sans-serif",
-                fontSize: '24px',
-                fontWeight: 700,
-                color: '#F2ABA7',
-              }}
-            >
-              {formatTime(timeRemaining)}
-            </p>
-          </div>
-        ) : (
-          <div
-            style={{
-              backgroundColor: '#FFEBEE',
-              border: '1px solid #F2ABA7',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              marginBottom: '24px',
-              textAlign: 'center',
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "'Manrope', sans-serif",
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#D32F2F',
-              }}
-            >
-              Hold expired. Please hold the item again.
-            </p>
-          </div>
-        )}
+          Upload your proof of purchase
+        </h3>
 
         {/* Upload Area */}
         <div
@@ -250,24 +242,45 @@ function DonationPopup({ item, childName, isOpen, onClose, onConfirm }) {
               color: '#EB8E89',
             }}
           >
-            {proofFile ? proofFile.name : 'Upload your proof of purchase'}
+            {proofFile ? proofFile.name : 'Accept PNG, JPG, PDF'}
           </p>
         </div>
 
+        {/* Tracking Number Heading */}
+        <h3
+          style={{
+            fontFamily: "'Manrope', sans-serif",
+            fontSize: '14px',
+            fontWeight: 700,
+            color: '#EB8E89',
+            marginBottom: '8px',
+          }}
+        >
+          Enter Your Tracking Number
+        </h3>
+
         {/* Tracking Number Input */}
         <div style={{ marginBottom: '24px' }}>
+          <style>
+            {`
+              #tracking-number-input::placeholder {
+                color: #EB8E89;
+              }
+            `}
+          </style>
           <input
+            id="tracking-number-input"
             type="text"
-            placeholder="Enter your tracking number"
+            placeholder="Eg. 1Z9999999999999999"
             value={trackingNumber}
             onChange={(e) => setTrackingNumber(e.target.value)}
             style={{
               width: '100%',
               border: '1px solid #EB8E89',
               borderRadius: '8px',
-              padding: '12px 16px',
+              padding: '8px 16px',
               fontFamily: "'Manrope', sans-serif",
-              fontSize: '16px',
+              fontSize: '14px',
               color: '#06404D',
               outline: 'none',
             }}
@@ -284,7 +297,7 @@ function DonationPopup({ item, childName, isOpen, onClose, onConfirm }) {
               backgroundColor: '#FFFFFF',
               border: '1px solid #EB8E89',
               borderRadius: '8px',
-              padding: '12px 24px',
+              padding: '8px 16px',
               fontFamily: "'Manrope', sans-serif",
               fontSize: '16px',
               fontWeight: 600,
@@ -303,7 +316,7 @@ function DonationPopup({ item, childName, isOpen, onClose, onConfirm }) {
               backgroundColor: '#EB8E89',
               border: 'none',
               borderRadius: '8px',
-              padding: '12px 24px',
+              padding: '12px 16px',
               fontFamily: "'Manrope', sans-serif",
               fontSize: '16px',
               fontWeight: 600,

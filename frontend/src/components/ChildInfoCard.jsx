@@ -14,6 +14,13 @@ function ChildInfoCard({ child, onClick }) {
         padding: '24px',
         height: 'auto',
         minHeight: 'auto',
+        transition: 'background-color 0.3s ease'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = '#E8E8E8'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = '#FFFFFF'
       }}
     >
       {/* Top Section: Name and Age/Gender */}

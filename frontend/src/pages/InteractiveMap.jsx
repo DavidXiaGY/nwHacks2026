@@ -1,10 +1,13 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import OrphanageCard from '../components/OrphanageCard'
 import { API_BASE_URL } from '../config.js'
+import holly from '../assets/holly.svg'
+import mitten from '../assets/mitten.svg'
+import snowflake from '../assets/snowflake.svg'
 
 // Fix for default marker icons in React
 delete L.Icon.Default.prototype._getIconUrl
@@ -43,6 +46,9 @@ const orphanageIcon = new L.Icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 })
+
+// Array of icon paths - defined outside component to ensure stable reference
+const icons = [holly, mitten, snowflake]
 
 // Component to handle map view changes when orphanage is selected
 function MapController({ selectedOrphanage, userLocation }) {
@@ -133,16 +139,31 @@ function InteractiveMap() {
     navigate(`/organizer-upload?orphanageId=${orphanageId}`)
   }
 
-  // Available icons
-  const icons = [
-    '/src/assets/holly.svg',
-    '/src/assets/mitten.svg',
-    '/src/assets/snowflake.svg'
-  ]
+  // Memoized icon mapping - creates a stable map of orphanage ID to icon
+  // This ensures icons don't change on re-renders
+  const iconMap = useMemo(() => {
+    const map = {}
+    orphanages.forEach(orphanage => {
+      // Use the orphanage ID to deterministically select an icon
+      // This ensures the same orphanage always gets the same icon, but different orphanages get different icons
+      // Convert ID to a hash for better distribution
+      const idStr = String(orphanage.id)
+      let hash = 0
+      for (let i = 0; i < idStr.length; i++) {
+        const char = idStr.charCodeAt(i)
+        hash = ((hash << 5) - hash) + char
+        hash = hash | 0 // Convert to 32-bit integer
+      }
+      // Use absolute value and modulo to get index
+      const index = Math.abs(hash) % icons.length
+      map[orphanage.id] = icons[index] || icons[0] // Fallback to first icon if index is invalid
+    })
+    return map
+  }, [orphanages])
   
-  // Get random icon for each card
-  const getRandomIcon = () => {
-    return icons[Math.floor(Math.random() * icons.length)]
+  // Function to get icon for an orphanage from the stable map
+  const getIconForOrphanage = (orphanageId) => {
+    return iconMap[orphanageId] || icons[0] // Fallback to first icon if not found
   }
 
   // Format location for OrphanageCard
@@ -234,7 +255,7 @@ function InteractiveMap() {
                       angelCount: orphanage.children ? orphanage.children.length : 0,
                     }}
                     onViewAngels={() => handleViewAngels(orphanage.id)}
-                    icon={getRandomIcon()}
+                    icon={holly}
                   />
                 </div>
               ))

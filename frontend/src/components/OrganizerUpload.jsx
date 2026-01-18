@@ -2044,7 +2044,7 @@ function OrganizerUpload() {
             {/* Detailed Child View */}
             <div className="flex flex-row gap-6" style={{ position: 'relative', minHeight: 'calc(100% - 64px)', paddingBottom: '80px', alignItems: 'stretch' }}>
                   {/* Center - Child Details with Wishlist */}
-                  <div className="flex-1 min-w-0" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div className="min-w-0" style={{ display: 'flex', flexDirection: 'column', flex: 2 }}>
                     {/* Child Name */}
                     <h2
                       style={{
