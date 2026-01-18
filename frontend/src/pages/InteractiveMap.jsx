@@ -157,15 +157,11 @@ function InteractiveMap() {
 
   return (
     <div className="h-screen w-full flex flex-col">
-      {/* Header */}
-      <div className="bg-[#FFFCFA] border-b border-[#06404D] p-4 z-10">
-        <h1 className="text-3xl font-bold font-redhatdisplay text-[#06404D]">
-          Find Orphanages Near You
-        </h1>
-        {error && (
-          <p className="text-red-600 mt-2 text-sm">{error}</p>
-        )}
-      </div>
+      {error && (
+        <div className="bg-[#FFFCFA] border-b border-[#06404D] p-4 z-10">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
 
       <div className="flex-1 flex relative">
         {/* Map Container */}
