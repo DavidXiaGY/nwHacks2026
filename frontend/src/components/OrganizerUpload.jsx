@@ -4,6 +4,7 @@ import { Globe } from 'lucide-react'
 import OrphanageDetailBackground from '../assets/OrphanageDetailBackground.png'
 import ChildInfoCard from './ChildInfoCard'
 import WishlistItemRow from './WishlistItemRow'
+import DonationPopup from './DonationPopup'
 
 function OrganizerUpload() {
   const navigate = useNavigate()
@@ -54,6 +55,11 @@ function OrganizerUpload() {
   const [loadingChildren, setLoadingChildren] = useState(false)
   const [selectedChild, setSelectedChild] = useState(null)
   const [showAddChildForm, setShowAddChildForm] = useState(false)
+
+  // Donation popup state
+  const [isPopupOpen, setIsPopupOpen] = useState(false)
+  const [selectedDonationItem, setSelectedDonationItem] = useState(null)
+  const [popupItemWithHold, setPopupItemWithHold] = useState(null)
 
   const API_BASE_URL = '/api'
 
@@ -590,7 +596,7 @@ function OrganizerUpload() {
 
   // Load children for the orphanage
   const loadChildren = async (orphanageId, token) => {
-    if (!orphanageId) return
+    if (!orphanageId) return null
     
     setLoadingChildren(true)
     try {
@@ -609,9 +615,21 @@ function OrganizerUpload() {
           console.log('First child interests:', childrenData[0].interests)
         }
         setChildren(childrenData)
+        
+        // Update selectedChild if it's currently selected
+        if (selectedChild) {
+          const updatedChild = childrenData.find(child => child.id === selectedChild.id)
+          if (updatedChild) {
+            setSelectedChild(updatedChild)
+          }
+        }
+        
+        return childrenData
       }
+      return null
     } catch (error) {
       console.error('Error loading children:', error)
+      return null
     } finally {
       setLoadingChildren(false)
     }
@@ -787,6 +805,182 @@ function OrganizerUpload() {
 
     } catch (error) {
       setChildMessage({ text: error.message || 'Failed to delete child', type: 'error' })
+    }
+  }
+
+  // Handle Donate Item click - hold the item and open popup
+  const handleDonateItem = async (item) => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      alert('Please login again.')
+      logout()
+      return
+    }
+
+    try {
+      // Check if item is already held by current user
+      const isAlreadyHeld = item.status === 'HELD' && item.heldByUserId === user?.id
+
+      if (isAlreadyHeld) {
+        // Item is already held by this user, refresh children to get latest data
+        // then open popup with existing hold
+        let childrenData = null
+        if (existingOrphanageId) {
+          childrenData = await loadChildren(existingOrphanageId, token)
+        } else if (orphanageIdParam) {
+          childrenData = await loadChildren(orphanageIdParam, token)
+        }
+        
+        // Find the updated item from the reloaded children data
+        let updatedItem = item
+        if (childrenData && selectedChild) {
+          const updatedChild = childrenData.find(child => child.id === selectedChild.id)
+          if (updatedChild) {
+            updatedItem = updatedChild.wishlist?.find(wishlistItem => wishlistItem.id === item.id) || item
+          }
+        }
+        
+        setSelectedDonationItem(updatedItem)
+        setPopupItemWithHold(updatedItem) // Use the updated item with holdExpiresAt
+        setIsPopupOpen(true)
+      } else {
+        // Hold the item for 24 hours
+        const response = await fetch(`${API_BASE_URL}/wishlist/${item.id}/hold`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to hold item')
+        }
+
+        // Reload children to update wishlist item status first
+        await loadChildren(existingOrphanageId || orphanageIdParam, token)
+
+        // Open popup with the updated item and hold information
+        // Use the item from the API response which has the latest holdExpiresAt
+        setSelectedDonationItem(data.item)
+        setPopupItemWithHold(data.item)
+        setIsPopupOpen(true)
+      }
+    } catch (error) {
+      alert(error.message || 'Failed to hold item. Please try again.')
+      console.error('Error holding item:', error)
+    }
+  }
+
+  // Handle Drop Donation - release the hold
+  const handleDropDonation = async (item) => {
+    if (!window.confirm('Are you sure you want to drop this donation? The item will become available for others.')) {
+      return
+    }
+
+    const token = localStorage.getItem('token')
+    if (!token) {
+      alert('Please login again.')
+      logout()
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/wishlist/${item.id}/release`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to release hold')
+      }
+
+      // Close popup if it's open for this item
+      if (selectedDonationItem?.id === item.id) {
+        setIsPopupOpen(false)
+        setSelectedDonationItem(null)
+        setPopupItemWithHold(null)
+      }
+
+      // Reload children to update wishlist item status
+      if (existingOrphanageId) {
+        await loadChildren(existingOrphanageId, token)
+      } else if (orphanageIdParam) {
+        await loadChildren(orphanageIdParam, token)
+      }
+    } catch (error) {
+      alert(error.message || 'Failed to release hold. Please try again.')
+      console.error('Error releasing hold:', error)
+    }
+  }
+
+  // Handle donation confirmation
+  const handleConfirmDonation = async (donationData) => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      alert('Please login again.')
+      logout()
+      return
+    }
+
+    try {
+      // TODO: Upload proof file to storage service (S3, Cloudinary, etc.)
+      // For now, we'll send proofUrl as-is if it's provided
+      const donationPayload = {
+        itemId: donationData.itemId,
+        orderId: donationData.orderId || null
+      }
+      
+      // Only include proofUrl if it's a valid URL
+      if (donationData.proofUrl) {
+        donationPayload.proofUrl = donationData.proofUrl
+      }
+      
+      // Only include notes if provided
+      if (donationData.notes) {
+        donationPayload.notes = donationData.notes
+      }
+
+      const response = await fetch(`${API_BASE_URL}/donations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(donationPayload)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Show more detailed error message if available
+        const errorMessage = data.details 
+          ? `${data.error}: ${data.details.map(d => d.msg).join(', ')}`
+          : (data.error || 'Failed to submit donation')
+        throw new Error(errorMessage)
+      }
+
+      // Close popup and reload children to update wishlist status
+      setIsPopupOpen(false)
+      setSelectedDonationItem(null)
+      setPopupItemWithHold(null)
+
+      // Reload children to update wishlist item status
+      if (existingOrphanageId) {
+        await loadChildren(existingOrphanageId, token)
+      } else if (orphanageIdParam) {
+        await loadChildren(orphanageIdParam, token)
+      }
+
+      alert('Donation submitted successfully!')
+    } catch (error) {
+      alert(error.message || 'Failed to submit donation. Please try again.')
+      console.error('Error submitting donation:', error)
     }
   }
 
@@ -1902,7 +2096,13 @@ function OrganizerUpload() {
                       {selectedChild.wishlist && selectedChild.wishlist.length > 0 ? (
                         <div>
                           {selectedChild.wishlist.map((item) => (
-                            <WishlistItemRow key={item.id} item={item} />
+                            <WishlistItemRow 
+                              key={item.id} 
+                              item={item}
+                              currentUserId={user?.id}
+                              onDonateItem={isDonor ? handleDonateItem : undefined}
+                              onDropDonation={isDonor ? handleDropDonation : undefined}
+                            />
                           ))}
                         </div>
                       ) : (
@@ -2095,6 +2295,21 @@ function OrganizerUpload() {
               </button>
           </div>
         </>
+      )}
+
+      {/* Donation Popup */}
+      {isDonor && isPopupOpen && selectedDonationItem && (
+        <DonationPopup
+          item={popupItemWithHold || selectedDonationItem}
+          childName={selectedChild?.firstName || ''}
+          isOpen={isPopupOpen}
+          onClose={() => {
+            setIsPopupOpen(false)
+            setSelectedDonationItem(null)
+            setPopupItemWithHold(null)
+          }}
+          onConfirm={handleConfirmDonation}
+        />
       )}
     </div>
   )

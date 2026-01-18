@@ -11,10 +11,10 @@ router.post(
   authenticate,
   requireRole('DONATOR'),
   [
-    body('itemId').notEmpty(),
-    body('orderId').optional().trim(),
-    body('proofUrl').optional().isURL(),
-    body('notes').optional().trim()
+    body('itemId').notEmpty().withMessage('Item ID is required'),
+    body('orderId').optional({ nullable: true, checkFalsy: true }).trim(),
+    body('proofUrl').optional({ nullable: true, checkFalsy: true }),
+    body('notes').optional({ nullable: true, checkFalsy: true }).trim()
   ],
   async (req, res, next) => {
     try {
