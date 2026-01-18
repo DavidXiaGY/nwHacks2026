@@ -114,5 +114,13 @@
   .button-bg-secondary {
     background-color: var(--color-button-bg-secondary);
   }
+
+  .border-default {
+    border-color: var(--color-text-default);
+  }
+
+  .border-tertiary {
+    border-color: var(--color-text-tertiary);
+  }
 }
 
