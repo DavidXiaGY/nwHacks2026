@@ -7,8 +7,8 @@ const router = express.Router()
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 
-// Sign-up route
-router.post('/signup', async (req, res) => {
+// Helper function for signup/register
+async function handleSignup(req, res) {
   try {
     const { email, password, displayName, role } = req.body
 
@@ -80,7 +80,13 @@ router.post('/signup', async (req, res) => {
       ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
     })
   }
-})
+}
+
+// Sign-up route
+router.post('/signup', handleSignup)
+
+// Register route (alias for signup)
+router.post('/register', handleSignup)
 
 // Login route
 router.post('/login', async (req, res) => {
