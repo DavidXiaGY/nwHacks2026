@@ -34,19 +34,37 @@ This guide will help you deploy your full-stack application using **Railway** (b
    - Set the **Root Directory** to `backend`
    - Railway will auto-detect Node.js and run `npm install` and `npm start`
 
-5. **Set Environment Variables**:
-   - Go to your backend service → "Variables" tab
-   - **IMPORTANT:** Check that `DATABASE_URL` is automatically set by Railway from your PostgreSQL service
-     - If `DATABASE_URL` is NOT there, you need to link the PostgreSQL service:
-       - In your backend service → "Variables" tab → Click "New Variable"
-       - Railway should show a "Reference" option - select your PostgreSQL service
-       - This will create `DATABASE_URL` automatically
-     - Or manually: Go to PostgreSQL service → "Variables" tab → Copy the `DATABASE_URL` → Paste it in backend service variables
-   - Add these additional variables:
-     - `JWT_SECRET` - Generate a random secret: `openssl rand -base64 32`
-     - `NODE_ENV=production`
-     - `PORT` - Railway sets this automatically, don't override it
-     - `FRONTEND_URL` - You'll add this after frontend deploys (e.g., `https://your-app.vercel.app`)
+5. **Set Environment Variables** (CRITICAL STEP):
+   
+   **⚠️ DATABASE_URL MUST be set or migrations will fail!**
+   
+   Go to your backend service → "Variables" tab
+   
+   **Option A: Link PostgreSQL Service (Recommended - Automatic)**
+   - Click "New Variable" or "Add Variable"
+   - Look for a "Reference" or "Link Service" option
+   - Select your PostgreSQL service from the dropdown
+   - Railway will automatically create `DATABASE_URL` with the correct connection string
+   - This is the easiest method!
+   
+   **Option B: Manual Setup**
+   - Go to your PostgreSQL service → "Variables" tab
+   - Find and copy the `DATABASE_URL` value (it's a long connection string)
+   - Go back to your backend service → "Variables" tab
+   - Click "New Variable"
+   - Name: `DATABASE_URL`
+   - Value: Paste the connection string you copied
+   - Click "Add"
+   
+   **Add Other Required Variables:**
+   - `JWT_SECRET` - Generate with: `openssl rand -base64 32` (or use any random string)
+   - `NODE_ENV` = `production`
+   - `FRONTEND_URL` - You'll add this after frontend deploys (e.g., `https://your-app.vercel.app`)
+   - `PORT` - Railway sets this automatically, don't override it
+   
+   **Verify DATABASE_URL is Set:**
+   - After adding, you should see `DATABASE_URL` in your backend service variables list
+   - It should look like: `postgresql://user:password@host:port/database`
 
 6. **Run Database Migrations**:
    
@@ -79,7 +97,36 @@ This guide will help you deploy your full-stack application using **Railway** (b
    
    **Alternative:** The URL might also be visible on the service's main page under "Public Domain" or in the "Variables" tab as `RAILWAY_PUBLIC_DOMAIN`
 
-## Step 2: Deploy Frontend to Vercel
+## Step 2: Deploy Frontend to Netlify
+
+1. **Go to Netlify**:
+   - Visit [netlify.com](https://netlify.com)
+   - Sign up or log in
+   - Click "Add new site" → "Import an existing project"
+   - Connect to your GitHub repository
+
+2. **Configure Build Settings**:
+   - Netlify should auto-detect the settings from `netlify.toml`
+   - If not, manually set:
+     - **Base directory**: `frontend`
+     - **Build command**: `npm install && npm run build`
+     - **Publish directory**: `frontend/dist`
+
+3. **Set Environment Variables**:
+   - Go to "Site configuration" → "Environment variables"
+   - Click "Add variable"
+   - Add: `VITE_API_URL` = your Railway backend URL (e.g., `https://your-app.up.railway.app`)
+   - **Important:** Make sure to include `https://` and no trailing slash
+
+4. **Deploy**:
+   - Click "Deploy site"
+   - Netlify will build and deploy your frontend
+   - You'll get a URL like: `https://your-app-name.netlify.app`
+   - You can also set a custom domain in "Domain settings"
+
+## Alternative: Deploy Frontend to Vercel
+
+If you prefer Vercel instead:
 
 1. **Go to Vercel**:
    - Visit [vercel.com](https://vercel.com)
@@ -106,7 +153,9 @@ This guide will help you deploy your full-stack application using **Railway** (b
 
 The backend CORS is already configured! You just need to:
 1. In Railway, go to your backend service → "Variables"
-2. Add: `FRONTEND_URL` = your Vercel frontend URL (e.g., `https://your-app.vercel.app`)
+2. Add: `FRONTEND_URL` = your frontend URL:
+   - If using Netlify: `https://your-app-name.netlify.app`
+   - If using Vercel: `https://your-app.vercel.app`
 3. Railway will automatically redeploy when you add the variable
 
 ## Step 4: Update Frontend API Calls
@@ -121,7 +170,11 @@ The frontend is already configured to use `VITE_API_URL` environment variable. M
 - Railway auto-deploys on git push
 - To manually redeploy: Railway dashboard → Service → "Redeploy"
 
-### Vercel (Frontend)
+### Netlify (Frontend)
+- Netlify auto-deploys on git push
+- To manually redeploy: Netlify dashboard → Site → "Deploys" → "Trigger deploy"
+
+### Vercel (Frontend - Alternative)
 - Vercel auto-deploys on git push
 - To manually redeploy: Vercel dashboard → Project → "Redeploy"
 
@@ -134,9 +187,10 @@ The frontend is already configured to use `VITE_API_URL` environment variable. M
 - **Node.js version errors**: The project requires Node.js 20.19+ (configured via `.nvmrc` and `package.json` engines). Railway should auto-detect this, but if issues persist, check Railway service settings.
 
 ### Frontend Issues
-- **API calls failing**: Check `VITE_API_URL` is set correctly in Vercel
+- **API calls failing**: Check `VITE_API_URL` is set correctly in Netlify/Vercel environment variables
 - **CORS errors**: Make sure `FRONTEND_URL` is set in Railway and CORS is configured
-- **Build errors**: Check Vercel build logs for missing dependencies
+- **Build errors**: Check Netlify/Vercel build logs for missing dependencies
+- **404 errors on routes**: Make sure `netlify.toml` has the SPA redirect rule (already configured)
 
 ## Alternative: Deploy Everything to Railway
 
@@ -157,5 +211,5 @@ If you prefer one platform:
 - `FRONTEND_URL` (your Vercel URL)
 - `NODE_ENV=production`
 
-### Frontend (Vercel)
-- `VITE_API_URL` (your Railway backend URL)
+### Frontend (Netlify or Vercel)
+- `VITE_API_URL` (your Railway backend URL, e.g., `https://your-app.up.railway.app`)

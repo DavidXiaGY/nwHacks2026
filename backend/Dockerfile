@@ -20,4 +20,5 @@ COPY . .
 EXPOSE 3000
 
 # Generate Prisma Client and run migrations, then start
-CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && npm start"]
+# Debug: Check DATABASE_URL first, then run Prisma commands
+CMD ["sh", "-c", "echo 'Checking DATABASE_URL...' && if [ -z \"$DATABASE_URL\" ]; then echo '❌ ERROR: DATABASE_URL is not set!'; echo 'Please go to Railway → Your Backend Service → Variables → Add DATABASE_URL'; echo 'See DEPLOYMENT.md Step 5 for instructions.'; exit 1; fi && echo '✅ DATABASE_URL is set' && npx prisma generate && npx prisma migrate deploy && npm start"]

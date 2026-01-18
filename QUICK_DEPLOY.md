@@ -2,7 +2,7 @@
 
 ## 🚀 Fastest Way to Deploy
 
-### Option 1: Railway + Vercel (Recommended - ~10 minutes)
+### Option 1: Railway + Netlify (Recommended - ~10 minutes)
 
 1. **Backend (Railway)**:
    - Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
@@ -12,6 +12,21 @@
      - `JWT_SECRET` (generate: `openssl rand -base64 32`)
      - `FRONTEND_URL` (you'll add this after frontend deploys)
    - Railway auto-deploys!
+
+2. **Frontend (Netlify)**:
+   - Go to [netlify.com](https://netlify.com) → Add new site → Import GitHub repo
+   - Netlify will auto-detect settings from `netlify.toml`
+   - Add environment variable:
+     - `VITE_API_URL` = your Railway backend URL
+   - Deploy!
+
+3. **Update Backend**:
+   - Add `FRONTEND_URL` = your Netlify URL in Railway
+   - Done! ✅
+
+### Option 1b: Railway + Vercel (Alternative)
+
+1. **Backend (Railway)**: Same as above
 
 2. **Frontend (Vercel)**:
    - Go to [vercel.com](https://vercel.com) → Add New Project → Import GitHub repo
@@ -43,8 +58,8 @@
 - ✅ `FRONTEND_URL`
 - ✅ `NODE_ENV=production`
 
-### Vercel (Frontend)
-- ✅ `VITE_API_URL`
+### Netlify/Vercel (Frontend)
+- ✅ `VITE_API_URL` (your Railway backend URL)
 
 ## 🔧 Common Issues
 
