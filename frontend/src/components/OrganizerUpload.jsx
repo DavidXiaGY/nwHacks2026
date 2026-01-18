@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Globe } from 'lucide-react'
 import OrphanageDetailBackground from '../assets/OrphanageDetailBackground.png'
 import ChildInfoCard from './ChildInfoCard'
@@ -7,8 +7,11 @@ import WishlistItemRow from './WishlistItemRow'
 
 function OrganizerUpload() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const orphanageIdParam = searchParams.get('orphanageId')
   const [user, setUser] = useState(null)
   const [existingOrphanageId, setExistingOrphanageId] = useState(null)
+  const isDonor = user && user.role === 'DONATOR'
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -55,7 +58,7 @@ function OrganizerUpload() {
   const API_BASE_URL = '/api'
 
   useEffect(() => {
-    // Check if user is logged in and is organizer
+    // Check if user is logged in
     const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
 
@@ -66,19 +69,72 @@ function OrganizerUpload() {
 
     try {
       const userObj = JSON.parse(userData)
-      if (userObj.role !== 'ORGANIZER') {
+      // Allow both ORGANIZER and DONATOR roles
+      if (userObj.role !== 'ORGANIZER' && userObj.role !== 'DONATOR') {
         navigate('/login')
         return
       }
       setUser(userObj)
-      // Check for existing orphanage after setting user
-      checkExistingOrphanage(token)
+      
+      // If orphanageId is provided in URL, load that orphanage
+      if (orphanageIdParam) {
+        loadOrphanageById(orphanageIdParam, token)
+      } else {
+        // Check for existing orphanage after setting user (for organizers)
+        if (userObj.role === 'ORGANIZER') {
+          checkExistingOrphanage(token)
+        }
+      }
     } catch (e) {
       console.error('Error parsing user data:', e)
       navigate('/login')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [orphanageIdParam])
+
+  // Load orphanage by ID (for viewing specific orphanage)
+  const loadOrphanageById = async (orphanageId, token) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orphanages/${orphanageId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const orphanage = await response.json()
+        setExistingOrphanageId(orphanage.id)
+        
+        // Pre-fill form with orphanage data
+        const orphanageData = {
+          name: orphanage.name || '',
+          description: orphanage.description || '',
+          website: orphanage.website || '',
+          contactEmail: orphanage.contactEmail || '',
+          address: '' // Will be reverse geocoded if needed
+        }
+        setFormData(orphanageData)
+        setOriginalFormData(orphanageData)
+        
+        // Store coordinates for orphanage
+        if (orphanage.latitude && orphanage.longitude) {
+          const coords = {
+            latitude: orphanage.latitude,
+            longitude: orphanage.longitude
+          }
+          setCoordinates(coords)
+          setOriginalCoordinates(coords)
+          // Reverse geocode to get address
+          reverseGeocode(orphanage.latitude, orphanage.longitude)
+        }
+        
+        // Load children for this orphanage
+        loadChildren(orphanage.id, token)
+      }
+    } catch (error) {
+      console.error('Error loading orphanage:', error)
+    }
+  }
 
   const checkExistingOrphanage = async (token) => {
     try {
@@ -232,6 +288,11 @@ function OrganizerUpload() {
   }
 
   const handleInputChange = (e) => {
+    // Don't allow donors to change form data
+    if (isDonor) {
+      return
+    }
+    
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -308,6 +369,11 @@ function OrganizerUpload() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Don't allow donors to submit
+    if (isDonor) {
+      return
+    }
     
     const token = localStorage.getItem('token')
     if (!token) {
@@ -445,6 +511,11 @@ function OrganizerUpload() {
 
   // Handle address input with debounced geocoding
   const handleAddressChange = (e) => {
+    // Don't allow donors to change address
+    if (isDonor) {
+      return
+    }
+    
     const address = e.target.value
     setFormData(prev => ({
       ...prev,
@@ -801,6 +872,7 @@ function OrganizerUpload() {
                 value={formData.name}
                 onChange={handleInputChange}
                 required
+                readOnly={isDonor}
                 className="heading-xl text-default w-full"
                 placeholder="Enter orphanage name"
                 aria-label="Orphanage Name"
@@ -813,7 +885,9 @@ function OrganizerUpload() {
                   width: '100%',
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderBottom = '1px solid #06404D'
+                  if (!isDonor) {
+                    e.target.style.borderBottom = '1px solid #06404D'
+                  }
                 }}
                 onBlur={(e) => {
                   e.target.style.borderBottom = 'none'
@@ -829,12 +903,15 @@ function OrganizerUpload() {
                 name="description"
                 value={formData.description}
                 onChange={(e) => {
-                  handleInputChange(e)
-                  // Auto-resize textarea
-                  const textarea = e.target
-                  textarea.style.height = 'auto'
-                  textarea.style.height = `${textarea.scrollHeight}px`
+                  if (!isDonor) {
+                    handleInputChange(e)
+                    // Auto-resize textarea
+                    const textarea = e.target
+                    textarea.style.height = 'auto'
+                    textarea.style.height = `${textarea.scrollHeight}px`
+                  }
                 }}
+                readOnly={isDonor}
                 className="body-lg text-default w-full"
                 placeholder="Enter orphanage description"
                 aria-label="Orphanage Description"
@@ -850,7 +927,9 @@ function OrganizerUpload() {
                   minHeight: '1.5em',
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderBottom = '1px solid #06404D'
+                  if (!isDonor) {
+                    e.target.style.borderBottom = '1px solid #06404D'
+                  }
                 }}
                 onBlur={(e) => {
                   e.target.style.borderBottom = 'none'
@@ -872,6 +951,7 @@ function OrganizerUpload() {
                 name="website"
                 value={formData.website}
                 onChange={handleInputChange}
+                readOnly={isDonor}
                 placeholder="https://example.com"
                 className="w-full text-default"
                 style={{
@@ -882,7 +962,9 @@ function OrganizerUpload() {
                   width: '100%',
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderBottom = '1px solid #06404D'
+                  if (!isDonor) {
+                    e.target.style.borderBottom = '1px solid #06404D'
+                  }
                 }}
                 onBlur={(e) => {
                   e.target.style.borderBottom = 'none'
@@ -906,6 +988,7 @@ function OrganizerUpload() {
                 name="contactEmail"
                 value={formData.contactEmail}
                 onChange={handleInputChange}
+                readOnly={isDonor}
                 className="w-full text-default"
                 style={{
                   border: 'none',
@@ -915,7 +998,9 @@ function OrganizerUpload() {
                   width: '100%',
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderBottom = '1px solid #06404D'
+                  if (!isDonor) {
+                    e.target.style.borderBottom = '1px solid #06404D'
+                  }
                 }}
                 onBlur={(e) => {
                   e.target.style.borderBottom = 'none'
@@ -941,6 +1026,7 @@ function OrganizerUpload() {
             onChange={handleAddressChange}
             required
             placeholder="e.g., 123 Main St, Vancouver, BC, Canada"
+            readOnly={isDonor}
             disabled={geocoding}
             className="w-full text-default"
             style={{
@@ -964,10 +1050,12 @@ function OrganizerUpload() {
               lineHeight: 'inherit',
             }}
             onFocus={(e) => {
-              e.target.style.borderBottom = '1px solid #06404D'
-              // Auto-resize on focus
-              e.target.style.height = '0px'
-              e.target.style.height = `${e.target.scrollHeight}px`
+              if (!isDonor && !geocoding) {
+                e.target.style.borderBottom = '1px solid #06404D'
+                // Auto-resize on focus
+                e.target.style.height = '0px'
+                e.target.style.height = `${e.target.scrollHeight}px`
+              }
             }}
             onBlur={(e) => {
               e.target.style.borderBottom = 'none'
@@ -990,8 +1078,8 @@ function OrganizerUpload() {
           )}
         </div>
 
-            {/* Save and Cancel buttons - only show when changes are made */}
-            {(() => {
+            {/* Save and Cancel buttons - only show when changes are made and user is not a donor */}
+            {!isDonor && (() => {
               const hasChanges = 
                 formData.name !== originalFormData.name ||
                 formData.description !== originalFormData.description ||
@@ -1902,37 +1990,39 @@ function OrganizerUpload() {
               ) : (
                 // Grid View of Children
                 <>
-                  {/* Header with Add New Child Button */}
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'flex-end', 
-                    alignItems: 'center',
-                    marginBottom: '24px'
-                  }}>
-                    <button
-                      onClick={() => setShowAddChildForm(true)}
-                      style={{
-                        backgroundColor: '#EB8E89',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '12px 24px',
-                        fontFamily: "'Manrope', sans-serif",
-                        fontSize: '16px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#D87A75'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#EB8E89'
-                      }}
-                    >
-                      Add New Child
-                    </button>
-                  </div>
+                  {/* Header with Add New Child Button - only show for organizers */}
+                  {!isDonor && (
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'flex-end', 
+                      alignItems: 'center',
+                      marginBottom: '24px'
+                    }}>
+                      <button
+                        onClick={() => setShowAddChildForm(true)}
+                        style={{
+                          backgroundColor: '#EB8E89',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '12px 24px',
+                          fontFamily: "'Manrope', sans-serif",
+                          fontSize: '16px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#D87A75'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = '#EB8E89'
+                        }}
+                      >
+                        Add New Child
+                      </button>
+                    </div>
+                  )}
                   
                   <h2 className="sr-only">Existing Children</h2>
                   
