@@ -26,6 +26,8 @@ function OrganizerUpload() {
   const [originalCoordinates, setOriginalCoordinates] = useState({ latitude: null, longitude: null })
   const [geocoding, setGeocoding] = useState(false)
   const geocodeTimeoutRef = useRef(null)
+  const descriptionTextareaRef = useRef(null)
+  const addressTextareaRef = useRef(null)
   const [message, setMessage] = useState({ text: '', type: '' })
   const [loading, setLoading] = useState(false)
   
@@ -129,11 +131,71 @@ function OrganizerUpload() {
     }
   }
 
+  // Format address to show only street, city, province, and postal code
+  const formatAddress = (addressData) => {
+    const parts = []
+    const addr = addressData.address || {}
+    
+    // Street address (house number + road)
+    if (addr.house_number && addr.road) {
+      parts.push(`${addr.house_number} ${addr.road}`)
+    } else if (addr.road) {
+      parts.push(addr.road)
+    } else if (addr.pedestrian) {
+      // Sometimes landmarks use 'pedestrian' field
+      parts.push(addr.pedestrian)
+    }
+    
+    // City (try multiple fields)
+    if (addr.city) {
+      parts.push(addr.city)
+    } else if (addr.town) {
+      parts.push(addr.town)
+    } else if (addr.village) {
+      parts.push(addr.village)
+    } else if (addr.municipality) {
+      parts.push(addr.municipality)
+    }
+    
+    // Province/State (for Canada, this is usually in 'state' field)
+    if (addr.state) {
+      parts.push(addr.state)
+    } else if (addr.province) {
+      parts.push(addr.province)
+    } else if (addr.state_district) {
+      parts.push(addr.state_district)
+    }
+    
+    // Postal code - try to get full postal code from display_name if postcode is incomplete
+    let postcode = addr.postcode?.trim() || ''
+    
+    // For Canadian postal codes, Nominatim sometimes only returns the first 3 characters (FSA)
+    // Try to extract the full postal code from display_name if available
+    if (postcode && postcode.length === 3 && addressData.display_name) {
+      // Look for postal code pattern in display_name (e.g., "V6Z 2H7" or "V6Z, V6Z 2H7")
+      const postalCodePattern = /([A-Z]\d[A-Z]\s?\d[A-Z]\d)/g
+      const matches = addressData.display_name.match(postalCodePattern)
+      if (matches && matches.length > 0) {
+        // Use the last match (usually the full one) and normalize spacing
+        const fullPostcode = matches[matches.length - 1].replace(/\s+/g, ' ').trim()
+        if (fullPostcode.length > postcode.length) {
+          postcode = fullPostcode
+        }
+      }
+    }
+    
+    if (postcode) {
+      parts.push(postcode)
+    }
+    
+    return parts.join(', ')
+  }
+
   // Reverse geocode coordinates to address
   const reverseGeocode = async (lat, lng) => {
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
         {
           headers: {
             'User-Agent': 'OrphanageApp/1.0'
@@ -143,16 +205,21 @@ function OrganizerUpload() {
 
       if (response.ok) {
         const data = await response.json()
-        if (data.display_name) {
-          const address = data.display_name
-          setFormData(prev => ({
-            ...prev,
-            address: address
-          }))
-          setOriginalFormData(prev => ({
-            ...prev,
-            address: address
-          }))
+        if (data.address) {
+          const formattedAddress = formatAddress(data)
+          if (formattedAddress) {
+            setFormData(prev => ({
+              ...prev,
+              address: formattedAddress
+            }))
+            setOriginalFormData(prev => ({
+              ...prev,
+              address: formattedAddress
+            }))
+            // Debug: log the formatted address to verify it's correct
+            console.log('Formatted address:', formattedAddress)
+            console.log('Address data:', data.address)
+          }
         }
       }
     } catch (error) {
@@ -381,6 +448,11 @@ function OrganizerUpload() {
       address: address
     }))
     
+    // Auto-resize textarea immediately
+    const textarea = e.target
+    textarea.style.height = '0px'
+    textarea.style.height = `${textarea.scrollHeight}px`
+    
     // Clear coordinates when address changes
     setCoordinates({ latitude: null, longitude: null })
     
@@ -411,6 +483,32 @@ function OrganizerUpload() {
     }
   }, [])
 
+  // Auto-resize description textarea when value changes
+  useEffect(() => {
+    if (descriptionTextareaRef.current) {
+      const textarea = descriptionTextareaRef.current
+      textarea.style.height = 'auto'
+      textarea.style.height = `${textarea.scrollHeight}px`
+    }
+  }, [formData.description])
+
+  // Auto-resize address textarea when value changes
+  useEffect(() => {
+    if (addressTextareaRef.current) {
+      const textarea = addressTextareaRef.current
+      // Use requestAnimationFrame to ensure DOM is updated
+      requestAnimationFrame(() => {
+        // Reset height to auto to get accurate scrollHeight
+        textarea.style.height = '0px'
+        // Set height to scrollHeight to fit all content exactly
+        const scrollHeight = textarea.scrollHeight
+        textarea.style.height = `${scrollHeight}px`
+        // Ensure width is correct and text is visible
+        textarea.style.width = '100%'
+      })
+    }
+  }, [formData.address])
+
   const logout = () => {
     localStorage.clear()
     navigate('/login')
@@ -430,6 +528,12 @@ function OrganizerUpload() {
 
       if (response.ok) {
         const childrenData = await response.json()
+        console.log('Raw children data from API:', childrenData)
+        console.log('First child full object:', childrenData[0])
+        if (childrenData[0]) {
+          console.log('First child gender:', childrenData[0].gender)
+          console.log('First child interests:', childrenData[0].interests)
+        }
         setChildren(childrenData)
       }
     } catch (error) {
@@ -637,14 +741,24 @@ function OrganizerUpload() {
             <button 
               type="button" 
               onClick={() => navigate(-1)}
-              className="text-text-secondary heading-xs hover:text-text-default transition-colors"
+              className="text-text-secondary hover:text-text-tertiary transition-colors flex items-center gap-2 body-default"
+              style={{
+                fontWeight: 700,
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+              }}
             >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+              </svg>
               Back to Listings
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full mt-[32px]">
+            <div className="w-full">
               <label htmlFor="name" className="sr-only">Orphanage Name *</label>
               <input
                 type="text"
@@ -653,28 +767,64 @@ function OrganizerUpload() {
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="heading-xl text-default"
+                className="heading-xl text-default w-full"
                 placeholder="Enter orphanage name"
                 aria-label="Orphanage Name"
                 aria-required="true"
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  padding: 0,
+                  width: '100%',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderBottom = '1px solid #06404D'
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderBottom = 'none'
+                }}
               />
             </div>
 
-            <div>
+            <div className="w-full mt-[-16px] mb-[16px]">
               <label htmlFor="description" className="sr-only">Description</label>
               <textarea
+                ref={descriptionTextareaRef}
                 id="description"
                 name="description"
                 value={formData.description}
-                onChange={handleInputChange}
-                className="body-lg text-default"
+                onChange={(e) => {
+                  handleInputChange(e)
+                  // Auto-resize textarea
+                  const textarea = e.target
+                  textarea.style.height = 'auto'
+                  textarea.style.height = `${textarea.scrollHeight}px`
+                }}
+                className="body-lg text-default w-full"
                 placeholder="Enter orphanage description"
                 aria-label="Orphanage Description"
-                rows={4}
+                rows={1}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  padding: 0,
+                  width: '100%',
+                  resize: 'none',
+                  overflow: 'hidden',
+                  minHeight: '1.5em',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderBottom = '1px solid #06404D'
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderBottom = 'none'
+                }}
               />
             </div>
 
-            <div>
+            <div className="w-full">
               <label htmlFor="website" className="flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="size-6 text-secondary  ">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
@@ -689,10 +839,24 @@ function OrganizerUpload() {
                 value={formData.website}
                 onChange={handleInputChange}
                 placeholder="https://example.com"
+                className="w-full text-default"
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  padding: 0,
+                  width: '100%',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderBottom = '1px solid #06404D'
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderBottom = 'none'
+                }}
               />
             </div>
 
-            <div>
+            <div className="w-full">
               <label htmlFor="contactEmail" className="flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6 text-secondary">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
@@ -708,13 +872,35 @@ function OrganizerUpload() {
                 name="contactEmail"
                 value={formData.contactEmail}
                 onChange={handleInputChange}
+                className="w-full text-default"
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  padding: 0,
+                  width: '100%',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderBottom = '1px solid #06404D'
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderBottom = 'none'
+                }}
               />
             </div>
 
-        <div>
-          <label htmlFor="address">Address *</label>
-          <input
-            type="text"
+        <div className="w-full" style={{ minWidth: 0 }}>
+          <label htmlFor="address" className="flex items-center gap-2 ml-[-2px]">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6 text-secondary">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+            </svg>
+            <span className="text-secondary heading-sm">
+              Address
+            </span>
+          </label>
+          <textarea
+            ref={addressTextareaRef}
             id="address"
             name="address"
             value={formData.address}
@@ -722,17 +908,47 @@ function OrganizerUpload() {
             required
             placeholder="e.g., 123 Main St, Vancouver, BC, Canada"
             disabled={geocoding}
+            className="w-full text-default"
+            style={{
+              border: 'none',
+              outline: 'none',
+              background: 'transparent',
+              padding: 0,
+              margin: 0,
+              width: '100%',
+              maxWidth: '100%',
+              resize: 'none',
+              overflow: 'hidden',
+              minHeight: '1.5em',
+              height: 'auto',
+              wordWrap: 'break-word',
+              whiteSpace: 'pre-wrap',
+              overflowWrap: 'break-word',
+              boxSizing: 'border-box',
+              textOverflow: 'clip',
+              wordBreak: 'normal',
+              lineHeight: 'inherit',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderBottom = '1px solid #06404D'
+              // Auto-resize on focus
+              e.target.style.height = '0px'
+              e.target.style.height = `${e.target.scrollHeight}px`
+            }}
+            onBlur={(e) => {
+              e.target.style.borderBottom = 'none'
+            }}
           />
           {geocoding && (
             <div style={{ fontSize: '0.9em', color: '#666', marginTop: '5px' }}>
               Looking up address...
             </div>
           )}
-          {coordinates.latitude && coordinates.longitude && !geocoding && (
+          {/* {coordinates.latitude && coordinates.longitude && !geocoding && (
             <div style={{ fontSize: '0.9em', color: '#28a745', marginTop: '5px' }}>
               ✓ Address found: {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}
             </div>
-          )}
+          )} */}
           {formData.address.trim().length > 5 && !coordinates.latitude && !geocoding && (
             <div style={{ fontSize: '0.9em', color: '#dc3545', marginTop: '5px' }}>
               Address not found. Please check and try again.
@@ -740,14 +956,51 @@ function OrganizerUpload() {
           )}
         </div>
 
-            <div>
-              <button type="submit" disabled={loading || !isFormValid()}>
-                {loading ? 'Saving...' : 'Save'}
-              </button>
-              <button type="button" onClick={handleCancel} disabled={loading}>
-                Cancel
-              </button>
-            </div>
+            {/* Save and Cancel buttons - only show when changes are made */}
+            {(() => {
+              const hasChanges = 
+                formData.name !== originalFormData.name ||
+                formData.description !== originalFormData.description ||
+                formData.website !== originalFormData.website ||
+                formData.contactEmail !== originalFormData.contactEmail ||
+                formData.address !== originalFormData.address ||
+                coordinates.latitude !== originalCoordinates.latitude ||
+                coordinates.longitude !== originalCoordinates.longitude
+
+              if (!hasChanges) return null
+
+              return (
+                <div className="flex gap-4" style={{ marginTop: '64px' }}>
+                  <button 
+                    type="button" 
+                    onClick={handleCancel} 
+                    disabled={loading}
+                    className="body-default text-white rounded transition-opacity disabled:opacity-50"
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: '#06384D',
+                      color: '#FFFFFF',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={loading || !isFormValid()}
+                    className="body-default text-white rounded transition-opacity disabled:opacity-50"
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: '#EB8E89',
+                      color: '#FFFFFF',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {loading ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              )
+            })()}
           </form>
         </div>
 
@@ -771,7 +1024,7 @@ function OrganizerUpload() {
               ) : children.length === 0 ? (
                 <div className="body-default text-default">No children added yet. Add a child above.</div>
               ) : (
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-4" style={{ alignItems: 'start' }}>
                   {children.map((child) => (
                     <ChildInfoCard 
                       key={child.id}
