@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import OrphanageCard from '../components/OrphanageCard'
 
 // Fix for default marker icons in React
 delete L.Icon.Default.prototype._getIconUrl
@@ -59,6 +61,7 @@ function MapController({ selectedOrphanage, userLocation }) {
 }
 
 function InteractiveMap() {
+  const navigate = useNavigate()
   const [userLocation, setUserLocation] = useState(null)
   const [orphanages, setOrphanages] = useState([])
   const [selectedOrphanage, setSelectedOrphanage] = useState(null)
@@ -124,6 +127,22 @@ function InteractiveMap() {
     }
   }
 
+  // Handle viewing angels (children)
+  const handleViewAngels = (orphanageId) => {
+    navigate(`/organizer-upload?orphanageId=${orphanageId}`)
+  }
+
+  // Format location for OrphanageCard
+  const formatLocation = (orphanage) => {
+    if (orphanage.distance !== undefined) {
+      return `${orphanage.distance.toFixed(2)} km away`
+    }
+    if (orphanage.latitude && orphanage.longitude) {
+      return `${orphanage.latitude.toFixed(4)}, ${orphanage.longitude.toFixed(4)}`
+    }
+    return 'Location not available'
+  }
+
   // Calculate center point for map (between user and orphanages)
   const getMapCenter = () => {
     if (!userLocation) return [49.2827, -123.1207] // Default to Vancouver
@@ -164,6 +183,51 @@ function InteractiveMap() {
       )}
 
       <div className="flex-1 flex relative">
+        {/* Orphanage List Sidebar */}
+        <div className="w-96 bg-[#FFFCFA] border-r border-[#06404D] overflow-y-auto">
+          <div className="p-4 sticky top-0 bg-[#FFFCFA] border-b border-[#06404D] z-10">
+            <h2 className="text-2xl font-bold font-redhatdisplay text-[#06404D] mb-2">
+              Orphanages
+            </h2>
+            <p className="text-sm text-gray-600">
+              {orphanages.length} {orphanages.length === 1 ? 'orphanage' : 'orphanages'} found
+            </p>
+          </div>
+
+          <div className="p-4 space-y-4">
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600">Loading orphanages...</p>
+              </div>
+            ) : orphanages.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600">No orphanages found in your area.</p>
+              </div>
+            ) : (
+              orphanages.map((orphanage) => (
+                <div
+                  key={orphanage.id}
+                  onClick={() => handleOrphanageClick(orphanage)}
+                  className={`cursor-pointer transition-all ${
+                    selectedOrphanage?.id === orphanage.id ? 'opacity-90' : ''
+                  }`}
+                >
+                  <OrphanageCard
+                    orphanage={{
+                      id: orphanage.id,
+                      name: orphanage.name,
+                      location: formatLocation(orphanage),
+                      description: orphanage.description || '',
+                      angelCount: orphanage.children ? orphanage.children.length : 0,
+                    }}
+                    onViewAngels={() => handleViewAngels(orphanage.id)}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         {/* Map Container */}
         <div className="flex-1 relative">
           <MapContainer
@@ -217,68 +281,6 @@ function InteractiveMap() {
               </Marker>
             ))}
           </MapContainer>
-        </div>
-
-        {/* Orphanage List Sidebar */}
-        <div className="w-96 bg-[#FFFCFA] border-l border-[#06404D] overflow-y-auto">
-          <div className="p-4 sticky top-0 bg-[#FFFCFA] border-b border-[#06404D] z-10">
-            <h2 className="text-2xl font-bold font-redhatdisplay text-[#06404D] mb-2">
-              Orphanages
-            </h2>
-            <p className="text-sm text-gray-600">
-              {orphanages.length} {orphanages.length === 1 ? 'orphanage' : 'orphanages'} found
-            </p>
-          </div>
-
-          <div className="p-4 space-y-4">
-            {loading ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600">Loading orphanages...</p>
-              </div>
-            ) : orphanages.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600">No orphanages found in your area.</p>
-              </div>
-            ) : (
-              orphanages.map((orphanage) => (
-                <div
-                  key={orphanage.id}
-                  onClick={() => handleOrphanageClick(orphanage)}
-                  className={`border-2 p-4 rounded-lg cursor-pointer transition-all ${
-                    selectedOrphanage?.id === orphanage.id
-                      ? 'border-[#F2ABA7] bg-[#F2ABA7] bg-opacity-20 shadow-lg'
-                      : 'border-[#06404D] bg-white hover:bg-gray-50'
-                  }`}
-                >
-                  <h3 className="font-bold text-xl font-redhatdisplay text-[#06404D] mb-2">
-                    {orphanage.name}
-                  </h3>
-                  {orphanage.description && (
-                    <p className="text-sm text-gray-700 mb-2 line-clamp-2">
-                      {orphanage.description}
-                    </p>
-                  )}
-                  <div className="flex justify-between items-center mt-3">
-                    {orphanage.distance !== undefined && (
-                      <span className="text-sm font-semibold text-blue-600">
-                        {orphanage.distance.toFixed(2)} km away
-                      </span>
-                    )}
-                    {orphanage.children && (
-                      <span className="text-sm text-gray-600">
-                        {orphanage.children.length} {orphanage.children.length === 1 ? 'child' : 'children'}
-                      </span>
-                    )}
-                  </div>
-                  {orphanage.contactEmail && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      {orphanage.contactEmail}
-                    </p>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
         </div>
       </div>
     </div>
