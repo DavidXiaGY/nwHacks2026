@@ -1,11 +1,15 @@
 import './App.css'
 import LoginSignup from './components/LoginSignup'
+import OrphanageCard from './components/OrphanageCard'
+import ChildInfoCard from './components/ChildInfoCard'
+
+import OrphanageCard from './components/OrphanageCard'
 import ChildInfoCard from './components/ChildInfoCard'
 
 
 function App() {
   return (
-    <div>
+    <><div>
       <LoginSignup />
       <ChildInfoCard 
         child={{ 
@@ -22,6 +26,14 @@ function App() {
         }} 
       />
     </div>
+    <div>
+      <OrphanageCard orphanage={{ 
+        name: "The Childen's Foundation",
+        location: "Vancouver, BC",
+        description: "Empowering youth through education and community.",
+        angelCount: 21,
+        }} />
+    </div></>
   )
 }
 

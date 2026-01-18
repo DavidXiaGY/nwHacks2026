@@ -1,0 +1,70 @@
+/*! tailwindcss v4.1.18 | MIT License | https://tailwindcss.com */
+@layer properties;
+.flex {
+  display: flex;
+}
+.min-h-\[270px\] {
+  min-height: 270px;
+}
+.max-w-\[300px\] {
+  max-width: 300px;
+}
+.max-w-\[530px\] {
+  max-width: 530px;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.flex-col-reverse {
+  flex-direction: column-reverse;
+}
+.flex-row {
+  flex-direction: row;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.border {
+  border-style: var(--tw-border-style);
+  border-width: 1px;
+}
+.border-2 {
+  border-style: var(--tw-border-style);
+  border-width: 2px;
+}
+.border-\[\#06404D\] {
+  border-color: #06404D;
+}
+.bg-\[\#F2ABA7\] {
+  background-color: #F2ABA7;
+}
+.bg-\[\#FFFCFA\] {
+  background-color: #FFFCFA;
+}
+.text-\[16px\] {
+  font-size: 16px;
+}
+.text-\[32px\] {
+  font-size: 32px;
+}
+.text-\[\#12707C\] {
+  color: #12707C;
+}
+.text-\[\#FFFCFA\] {
+  color: #FFFCFA;
+}
+.uppercase {
+  text-transform: uppercase;
+}
+@property --tw-border-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
+}
+@layer properties {
+  @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
+    *, ::before, ::after, ::backdrop {
+      --tw-border-style: solid;
+    }
+  }
+}
