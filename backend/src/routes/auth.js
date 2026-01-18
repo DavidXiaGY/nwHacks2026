@@ -72,9 +72,12 @@ router.post('/signup', async (req, res) => {
     })
   } catch (error) {
     console.error('Sign-up error:', error)
+    console.error('Error stack:', error.stack)
+    console.error('Error details:', JSON.stringify(error, null, 2))
     res.status(500).json({ 
       message: 'Internal server error',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
     })
   }
 })
@@ -134,9 +137,12 @@ router.post('/login', async (req, res) => {
     })
   } catch (error) {
     console.error('Login error:', error)
+    console.error('Error stack:', error.stack)
+    console.error('Error details:', JSON.stringify(error, null, 2))
     res.status(500).json({ 
       message: 'Internal server error',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
     })
   }
 })
