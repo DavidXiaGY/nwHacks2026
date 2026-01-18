@@ -1,10 +1,21 @@
 import { Paperclip } from 'lucide-react'
 
-function WishlistItemRow({ item }) {
+function WishlistItemRow({ item, onDonateItem, onDropDonation, currentUserId }) {
+  // Check if item is held by current user
+  const isHeldByCurrentUser = item.status === 'HELD' && item.heldByUserId === currentUserId
+
   // Determine background color and text based on status
   const getStatusStyles = (status) => {
     switch (status) {
       case 'HELD':
+        // If held by current user, show different styling
+        if (isHeldByCurrentUser) {
+          return {
+            backgroundColor: '#FFF4E6', // Light orange/yellow for user's own hold
+            color: '#06404D',
+            message: null // No message, show button instead
+          }
+        }
         return {
           backgroundColor: '#E3F2FD', // Light blue
           color: '#06404D',
@@ -17,11 +28,11 @@ function WishlistItemRow({ item }) {
           message: 'This order has been fulfilled!'
         }
       case 'VERIFYING':
-        // VERIFYING is treated as normal (white background)
+        // VERIFYING shows as fulfilled (green) from donor's perspective
         return {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: '#E8F5E9', // Light green - same as PURCHASED
           color: '#06404D',
-          message: null
+          message: 'This order has been fulfilled!'
         }
       default: // AVAILABLE
         return {
@@ -80,8 +91,56 @@ function WishlistItemRow({ item }) {
         >
           {statusStyles.message}
         </span>
+      ) : isHeldByCurrentUser ? (
+        <div style={{ display: 'flex', gap: '8px', marginLeft: '12px' }}>
+          <button
+            onClick={() => onDonateItem && onDonateItem(item)}
+            style={{
+              backgroundColor: '#EB8E89',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '6px 12px',
+              fontFamily: "'Manrope', sans-serif",
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#D87A75'
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#EB8E89'
+            }}
+          >
+            Continue Donation
+          </button>
+          <button
+            onClick={() => onDropDonation && onDropDonation(item)}
+            style={{
+              backgroundColor: '#FFFFFF',
+              color: '#EB8E89',
+              border: '1px solid #EB8E89',
+              borderRadius: '6px',
+              padding: '6px 12px',
+              fontFamily: "'Manrope', sans-serif",
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#FFF5F5'
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#FFFFFF'
+            }}
+          >
+            Drop Donation
+          </button>
+        </div>
       ) : (
         <button
+          onClick={() => onDonateItem && onDonateItem(item)}
           style={{
             backgroundColor: '#EB8E89',
             color: '#FFFFFF',
