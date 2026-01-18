@@ -143,8 +143,11 @@ function OrganizerUpload() {
     setGeocoding(true)
     try {
       // Use Nominatim API (OpenStreetMap) - free and no API key required
+      // Nominatim returns results sorted by relevance by default, so we trust the first result
+      // Add addressdetails=1 for better structured results
+      // Add countrycodes to limit to common countries (can be expanded)
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&addressdetails=1&limit=1&accept-language=en&countrycodes=ca,us`,
         {
           headers: {
             'User-Agent': 'OrphanageApp/1.0' // Required by Nominatim
@@ -162,6 +165,7 @@ function OrganizerUpload() {
         throw new Error('Address not found. Please try a more specific address.')
       }
 
+      // Use the first result - Nominatim already sorts by relevance
       const result = data[0]
       const lat = parseFloat(result.lat)
       const lng = parseFloat(result.lon)
@@ -169,6 +173,14 @@ function OrganizerUpload() {
       if (isNaN(lat) || isNaN(lng)) {
         throw new Error('Invalid coordinates returned')
       }
+
+      // Log the result for debugging (can be removed in production)
+      console.log('Geocoding result:', {
+        address: result.display_name,
+        type: result.type,
+        importance: result.importance,
+        hasHousenumber: !!result.address?.housenumber
+      })
 
       setCoordinates({ latitude: lat, longitude: lng })
       return { latitude: lat, longitude: lng }
