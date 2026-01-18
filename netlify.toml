@@ -3,10 +3,12 @@
   command = "npm install && npm run build"
   publish = "dist"
 
+# SPA redirect - all routes should serve index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = true
 
 [build.environment]
   NODE_VERSION = "20"
