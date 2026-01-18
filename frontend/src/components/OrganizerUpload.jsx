@@ -295,6 +295,38 @@ function OrganizerUpload() {
     }
   }
 
+  // Reverse geocode coordinates to address
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+        {
+          headers: {
+            'User-Agent': 'OrphanageApp/1.0'
+          }
+        }
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.display_name) {
+          const address = data.display_name
+          setFormData(prev => ({
+            ...prev,
+            address: address
+          }))
+          setOriginalFormData(prev => ({
+            ...prev,
+            address: address
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Reverse geocoding error:', error)
+      // Don't throw - this is optional
+    }
+  }
+
   // Validation function to check if all required fields are filled
   const isFormValid = () => {
     return formData.name.trim() !== '' && 
@@ -756,6 +788,109 @@ function OrganizerUpload() {
               Back to Listings
             </button>
           </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="name">Orphanage Name *</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="website">Website URL</label>
+          <input
+            type="url"
+            id="website"
+            name="website"
+            value={formData.website}
+            onChange={handleInputChange}
+            placeholder="https://example.com"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="contactEmail">Contact Email</label>
+          <input
+            type="email"
+            id="contactEmail"
+            name="contactEmail"
+            value={formData.contactEmail}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="address">Address *</label>
+          <input
+            type="text"
+            id="address"
+            name="address"
+            value={formData.address}
+            onChange={handleAddressChange}
+            required
+            placeholder="e.g., 123 Main St, Vancouver, BC, Canada"
+            disabled={geocoding}
+          />
+          {geocoding && (
+            <div style={{ fontSize: '0.9em', color: '#666', marginTop: '5px' }}>
+              Looking up address...
+            </div>
+          )}
+          {coordinates.latitude && coordinates.longitude && !geocoding && (
+            <div style={{ fontSize: '0.9em', color: '#28a745', marginTop: '5px' }}>
+              ✓ Address found: {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}
+            </div>
+          )}
+          {formData.address.trim().length > 5 && !coordinates.latitude && !geocoding && (
+            <div style={{ fontSize: '0.9em', color: '#dc3545', marginTop: '5px' }}>
+              Address not found. Please check and try again.
+            </div>
+          )}
+        </div>
+
+        <div>
+          <button type="submit" disabled={loading || !isFormValid()}>
+            {loading ? 'Saving...' : 'Save'}
+          </button>
+          <button type="button" onClick={handleCancel} disabled={loading}>
+            Cancel
+          </button>
+        </div>
+      </form>
+
+      {existingOrphanageId && (
+        <>
+          <h2>Add Children</h2>
+          
+          {childMessage.text && (
+            <div style={{
+              padding: '10px',
+              marginBottom: '10px',
+              borderRadius: '4px',
+              backgroundColor: childMessage.type === 'success' ? '#d4edda' : childMessage.type === 'error' ? '#f8d7da' : '#d1ecf1',
+              color: childMessage.type === 'success' ? '#155724' : childMessage.type === 'error' ? '#721c24' : '#0c5460',
+              border: `1px solid ${childMessage.type === 'success' ? '#c3e6cb' : childMessage.type === 'error' ? '#f5c6cb' : '#bee5eb'}`
+            }}>
+              {childMessage.text}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full mt-[32px]">
             <div className="w-full">
