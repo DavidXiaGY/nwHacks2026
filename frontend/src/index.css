@@ -124,3 +124,26 @@
   }
 }
 
+/* Prevent page-level scrolling */
+html, body {
+  overflow: hidden !important;
+  height: 100% !important;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Drawer animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
