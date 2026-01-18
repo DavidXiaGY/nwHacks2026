@@ -217,7 +217,16 @@ Get all children for a specific orphanage.
     "id": "uuid",
     "firstName": "Emma",
     "age": 8,
+    "gender": "female",
+    "clothingShirtSize": "Youth Medium",
+    "clothingPantSize": "Youth 8",
+    "clothingShoeSize": "Youth 2 (US)",
+    "clothingToyPreference": "Feminine",
+    "interests": "Loves art, drawing, and music",
+    "notes": "Very creative and enjoys group activities",
     "orphanageId": "uuid",
+    "createdAt": "2026-01-17T15:00:00.000Z",
+    "updatedAt": "2026-01-17T15:00:00.000Z",
     "wishlist": [
       {
         "id": "uuid",
@@ -235,6 +244,46 @@ Get all children for a specific orphanage.
 
 ---
 
+### GET /api/children/:childId
+Get a single child by ID with full details.
+
+**Response (200):**
+```json
+{
+  "id": "uuid",
+  "firstName": "Emma",
+  "age": 8,
+  "gender": "female",
+  "clothingShirtSize": "Youth Medium",
+  "clothingPantSize": "Youth 8",
+  "clothingShoeSize": "Youth 2 (US)",
+  "clothingToyPreference": "Feminine",
+  "interests": "Loves art, drawing, and music",
+  "notes": "Very creative and enjoys group activities",
+  "orphanageId": "uuid",
+  "createdAt": "2026-01-17T15:00:00.000Z",
+  "updatedAt": "2026-01-17T15:00:00.000Z",
+  "orphanage": {
+    "id": "uuid",
+    "name": "Hope Orphanage",
+    "organizerId": "uuid"
+  },
+  "wishlist": [
+    {
+      "id": "uuid",
+      "name": "LEGO Set",
+      "description": "Buildable toy",
+      "externalLink": "https://www.amazon.com/lego-set",
+      "price": 29.99,
+      "status": "AVAILABLE",
+      "heldBy": null
+    }
+  ]
+}
+```
+
+---
+
 ### POST /api/children
 Create a child with wishlist items (Organizer only).
 
@@ -245,7 +294,14 @@ Create a child with wishlist items (Organizer only).
 {
   "firstName": "Emma",
   "age": 8,
+  "gender": "female",
   "orphanageId": "uuid",
+  "clothingShirtSize": "Youth Medium",
+  "clothingPantSize": "Youth 8",
+  "clothingShoeSize": "Youth 2 (US)",
+  "clothingToyPreference": "Feminine",
+  "interests": "Loves art, drawing, and music",
+  "notes": "Very creative and enjoys group activities",
   "wishlistItems": [
     {
       "name": "LEGO Set",
@@ -263,13 +319,24 @@ Create a child with wishlist items (Organizer only).
 }
 ```
 
+**Note:** All fields except `firstName` and `orphanageId` are optional. Clothing sizes, preferences, interests, and notes can be added or updated later.
+
 **Response (201):**
 ```json
 {
   "id": "uuid",
   "firstName": "Emma",
   "age": 8,
+  "gender": "female",
+  "clothingShirtSize": "Youth Medium",
+  "clothingPantSize": "Youth 8",
+  "clothingShoeSize": "Youth 2 (US)",
+  "clothingToyPreference": "Feminine",
+  "interests": "Loves art, drawing, and music",
+  "notes": "Very creative and enjoys group activities",
   "orphanageId": "uuid",
+  "createdAt": "2026-01-17T15:00:00.000Z",
+  "updatedAt": "2026-01-17T15:00:00.000Z",
   "wishlist": [
     {
       "id": "uuid",
@@ -277,9 +344,72 @@ Create a child with wishlist items (Organizer only).
       "status": "AVAILABLE",
       ...
     }
-  ]
+  ],
+  "orphanage": {
+    "id": "uuid",
+    "name": "Hope Orphanage"
+  }
 }
 ```
+
+---
+
+### PUT /api/children/:childId
+Update a child's information (Organizer only - can only update children in their own orphanage).
+
+**Headers:** `Authorization: Bearer <organizer-token>`
+
+**Request Body (all fields optional):**
+```json
+{
+  "firstName": "Emma",
+  "age": 9,
+  "gender": "female",
+  "clothingShirtSize": "Youth Large",
+  "clothingPantSize": "Youth 10",
+  "clothingShoeSize": "Youth 3 (US)",
+  "clothingToyPreference": "Feminine",
+  "interests": "Loves art, drawing, music, and reading",
+  "notes": "Very creative and enjoys group activities. Recently started reading chapter books."
+}
+```
+
+**Response (200):**
+```json
+{
+  "id": "uuid",
+  "firstName": "Emma",
+  "age": 9,
+  "gender": "female",
+  "clothingShirtSize": "Youth Large",
+  "clothingPantSize": "Youth 10",
+  "clothingShoeSize": "Youth 3 (US)",
+  "clothingToyPreference": "Feminine",
+  "interests": "Loves art, drawing, music, and reading",
+  "notes": "Very creative and enjoys group activities. Recently started reading chapter books.",
+  "orphanageId": "uuid",
+  "createdAt": "2026-01-17T15:00:00.000Z",
+  "updatedAt": "2026-01-18T10:30:00.000Z",
+  "wishlist": [...],
+  "orphanage": {
+    "id": "uuid",
+    "name": "Hope Orphanage"
+  }
+}
+```
+
+**Note:** Only fields included in the request body will be updated. Omitted fields remain unchanged. To clear a field, set it to `null`.
+
+---
+
+### DELETE /api/children/:childId
+Delete a child (Organizer only - can only delete children from their own orphanage).
+
+**Headers:** `Authorization: Bearer <organizer-token>`
+
+**Response (204):** No content
+
+**Note:** This will also cascade delete all wishlist items associated with the child.
 
 ---
 
@@ -594,6 +724,8 @@ All errors follow this format:
 ### ORGANIZER Role
 - Can create orphanages
 - Can add children with wishlist items
+- Can update children information (name, age, gender, clothing sizes, preferences, interests, notes)
+- Can delete children from their own orphanage
 - Can view donations for their orphanage
 - Can verify donations (change status from VERIFYING to PURCHASED)
 - Can view their own orphanage
