@@ -35,7 +35,6 @@ function OrganizerUpload() {
   const geocodeTimeoutRef = useRef(null)
   const descriptionTextareaRef = useRef(null)
   const addressTextareaRef = useRef(null)
-  const [message, setMessage] = useState({ text: '', type: '' })
   const [loading, setLoading] = useState(false)
   
   // Child upload state
@@ -159,10 +158,6 @@ function OrganizerUpload() {
           
           if (existingOrphanage) {
             setExistingOrphanageId(existingOrphanage.id)
-            setMessage({ 
-              text: `You have an orphanage registered: "${existingOrphanage.name}". You can update it below.`, 
-              type: 'info' 
-            })
             // Pre-fill form with existing data
             // Note: We'll need to reverse geocode to get address, but for now just store coordinates
             const orphanageData = {
@@ -383,7 +378,6 @@ function OrganizerUpload() {
     
     const token = localStorage.getItem('token')
     if (!token) {
-      setMessage({ text: 'Please login again.', type: 'error' })
       logout()
       return
     }
@@ -393,11 +387,9 @@ function OrganizerUpload() {
       try {
         const coords = await geocodeAddress(formData.address)
         if (!coords) {
-          setMessage({ text: 'Please enter a valid address.', type: 'error' })
           return
         }
-      } catch (error) {
-        setMessage({ text: error.message || 'Failed to geocode address. Please check the address and try again.', type: 'error' })
+      } catch {
         return
       }
     }
@@ -412,7 +404,6 @@ function OrganizerUpload() {
     }
 
     setLoading(true)
-    setMessage({ text: '', type: '' })
 
     try {
       // Use PUT if updating existing orphanage, POST if creating new one
@@ -457,15 +448,13 @@ function OrganizerUpload() {
         longitude: coordinates.longitude
       })
 
-      setMessage({ text: 'Orphanage information saved successfully!', type: 'success' })
-      
       // Reload children if orphanage exists
       if (orphanageId) {
         await loadChildren(orphanageId, token)
       }
 
-    } catch (error) {
-      setMessage({ text: error.message || 'Save failed. Please try again.', type: 'error' })
+    } catch {
+      // Error handling
     } finally {
       setLoading(false)
     }
@@ -481,9 +470,6 @@ function OrganizerUpload() {
       contactEmail: originalFormData.contactEmail,
       address: restoredAddress
     })
-    
-    // Clear any messages
-    setMessage({ text: '', type: '' })
     
     // Re-geocode the restored address if it exists to update the geocode status display
     // This ensures the geocode status shows the correct state after cancel
@@ -773,40 +759,6 @@ function OrganizerUpload() {
     }
   }
 
-  // Delete a child
-  const handleDeleteChild = async (childId) => {
-    if (!window.confirm('Are you sure you want to delete this child? This will also delete all their wishlist items.')) {
-      return
-    }
-
-    const token = localStorage.getItem('token')
-    if (!token) {
-      setChildMessage({ text: 'Please login again.', type: 'error' })
-      logout()
-      return
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/children/${childId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to delete child')
-      }
-
-      // Reload children
-      await loadChildren(existingOrphanageId, token)
-      setChildMessage({ text: 'Child deleted successfully', type: 'success' })
-
-    } catch (error) {
-      setChildMessage({ text: error.message || 'Failed to delete child', type: 'error' })
-    }
-  }
 
   // Handle Donate Item click - hold the item and open popup
   const handleDonateItem = async (item) => {

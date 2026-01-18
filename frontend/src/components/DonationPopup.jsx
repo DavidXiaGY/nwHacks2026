@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Upload } from 'lucide-react'
 
-function DonationPopup({ item, childName, isOpen, onClose, onConfirm }) {
+function DonationPopup({ item, isOpen, onClose, onConfirm }) {
   const [proofFile, setProofFile] = useState(null)
   const [trackingNumber, setTrackingNumber] = useState('')
   const [timeRemaining, setTimeRemaining] = useState(null)

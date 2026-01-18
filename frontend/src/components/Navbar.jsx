@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 function Navbar() {
   const navigate = useNavigate()
@@ -8,7 +8,7 @@ function Navbar() {
   const [user, setUser] = useState(null)
 
   // Function to check auth state
-  const checkAuthState = () => {
+  const checkAuthState = useCallback(() => {
     const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
     
@@ -26,10 +26,11 @@ function Navbar() {
       setIsLoggedIn(false)
       setUser(null)
     }
-  }
+  }, [])
 
+  // Check auth state on mount and when location changes
   useEffect(() => {
-    // Check auth state on mount and when location changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     checkAuthState()
 
     // Listen for custom login event
@@ -51,7 +52,7 @@ function Navbar() {
       window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('authStateChanged', handleLoginEvent)
     }
-  }, [location])
+  }, [location, checkAuthState])
 
   const handleLogout = () => {
     localStorage.clear()
