@@ -6,16 +6,13 @@ WORKDIR /app
 COPY package*.json ./
 COPY .nvmrc ./
 
-# Install dependencies
-RUN npm install
-
-# Copy Prisma schema
+# Copy Prisma schema BEFORE installing (needed for postinstall script)
 COPY prisma ./prisma
 
-# Generate Prisma Client
-RUN npx prisma generate
+# Install dependencies (this will run postinstall -> prisma generate)
+RUN npm install
 
-# Copy application code
+# Copy rest of application code
 COPY . .
 
 # Expose port

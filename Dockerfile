@@ -6,17 +6,14 @@ WORKDIR /app
 COPY backend/package*.json ./backend/
 COPY backend/.nvmrc ./backend/
 
-# Install dependencies
+# Copy Prisma schema BEFORE installing (needed for postinstall script)
+COPY backend/prisma ./backend/prisma
+
+# Install dependencies (this will run postinstall -> prisma generate)
 WORKDIR /app/backend
 RUN npm install
 
-# Copy Prisma schema
-COPY backend/prisma ./prisma
-
-# Generate Prisma Client
-RUN npx prisma generate
-
-# Copy application code
+# Copy rest of application code
 COPY backend/ .
 
 # Expose port
