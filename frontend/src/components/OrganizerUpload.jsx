@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Globe } from 'lucide-react'
 import OrphanageDetailBackground from '../assets/OrphanageDetailBackground.png'
@@ -16,7 +15,6 @@ function OrganizerUpload() {
     website: '',
     contactEmail: '',
     address: ''
-    address: ''
   })
   const [originalFormData, setOriginalFormData] = useState({
     name: '',
@@ -24,16 +22,13 @@ function OrganizerUpload() {
     website: '',
     contactEmail: '',
     address: ''
-    address: ''
   })
   const [coordinates, setCoordinates] = useState({ latitude: null, longitude: null })
   const [originalCoordinates, setOriginalCoordinates] = useState({ latitude: null, longitude: null })
   const [geocoding, setGeocoding] = useState(false)
   const geocodeTimeoutRef = useRef(null)
-  const [coordinates, setCoordinates] = useState({ latitude: null, longitude: null })
-  const [originalCoordinates, setOriginalCoordinates] = useState({ latitude: null, longitude: null })
-  const [geocoding, setGeocoding] = useState(false)
-  const geocodeTimeoutRef = useRef(null)
+  const addressTextareaRef = useRef(null)
+  const descriptionTextareaRef = useRef(null)
   const [message, setMessage] = useState({ text: '', type: '' })
   const [loading, setLoading] = useState(false)
   
@@ -108,28 +103,15 @@ function OrganizerUpload() {
             })
             // Pre-fill form with existing data
             // Note: We'll need to reverse geocode to get address, but for now just store coordinates
-            // Note: We'll need to reverse geocode to get address, but for now just store coordinates
             const orphanageData = {
               name: existingOrphanage.name || '',
               description: existingOrphanage.description || '',
               website: existingOrphanage.website || '',
               contactEmail: existingOrphanage.contactEmail || '',
               address: '' // Will be reverse geocoded if needed
-              address: '' // Will be reverse geocoded if needed
             }
             setFormData(orphanageData)
             setOriginalFormData(orphanageData)
-            // Store coordinates for existing orphanage
-            if (existingOrphanage.latitude && existingOrphanage.longitude) {
-              const coords = {
-                latitude: existingOrphanage.latitude,
-                longitude: existingOrphanage.longitude
-              }
-              setCoordinates(coords)
-              setOriginalCoordinates(coords)
-              // Reverse geocode to get address
-              reverseGeocode(existingOrphanage.latitude, existingOrphanage.longitude)
-            }
             // Store coordinates for existing orphanage
             if (existingOrphanage.latitude && existingOrphanage.longitude) {
               const coords = {
@@ -310,9 +292,6 @@ function OrganizerUpload() {
            formData.address.trim() !== '' &&
            coordinates.latitude !== null &&
            coordinates.longitude !== null
-           formData.address.trim() !== '' &&
-           coordinates.latitude !== null &&
-           coordinates.longitude !== null
   }
 
   const handleSubmit = async (e) => {
@@ -339,27 +318,11 @@ function OrganizerUpload() {
       }
     }
 
-    // Geocode address if we don't have coordinates yet
-    if (!coordinates.latitude || !coordinates.longitude) {
-      try {
-        const coords = await geocodeAddress(formData.address)
-        if (!coords) {
-          setMessage({ text: 'Please enter a valid address.', type: 'error' })
-          return
-        }
-      } catch (error) {
-        setMessage({ text: error.message || 'Failed to geocode address. Please check the address and try again.', type: 'error' })
-        return
-      }
-    }
-
     const submitData = {
       name: formData.name,
       description: formData.description || undefined,
       website: formData.website || undefined,
       contactEmail: formData.contactEmail || undefined,
-      latitude: coordinates.latitude,
-      longitude: coordinates.longitude
       latitude: coordinates.latitude,
       longitude: coordinates.longitude
     }
@@ -408,13 +371,6 @@ function OrganizerUpload() {
       setOriginalCoordinates({
         latitude: coordinates.latitude,
         longitude: coordinates.longitude
-        address: formData.address
-      })
-      
-      // Update original coordinates to reflect saved state
-      setOriginalCoordinates({
-        latitude: coordinates.latitude,
-        longitude: coordinates.longitude
       })
 
       setMessage({ text: 'Orphanage information saved successfully!', type: 'success' })
@@ -432,9 +388,7 @@ function OrganizerUpload() {
   }
 
   const handleCancel = async () => {
-  const handleCancel = async () => {
     // Restore original form data
-    const restoredAddress = originalFormData.address
     const restoredAddress = originalFormData.address
     setFormData({
       name: originalFormData.name,
@@ -442,9 +396,7 @@ function OrganizerUpload() {
       website: originalFormData.website,
       contactEmail: originalFormData.contactEmail,
       address: restoredAddress
-      address: restoredAddress
     })
-    
     
     // Clear any messages
     setMessage({ text: '', type: '' })
@@ -519,82 +471,6 @@ function OrganizerUpload() {
       if (geocodeTimeoutRef.current) {
         clearTimeout(geocodeTimeoutRef.current)
       }
-    }
-  }, [])
-    
-    // Re-geocode the restored address if it exists to update the geocode status display
-    // This ensures the geocode status shows the correct state after cancel
-    if (restoredAddress && restoredAddress.trim() !== '') {
-      try {
-        await geocodeAddress(restoredAddress)
-      } catch (error) {
-        // If geocoding fails, restore original coordinates if they exist, otherwise clear
-        if (originalCoordinates.latitude !== null && originalCoordinates.longitude !== null) {
-          setCoordinates({
-            latitude: originalCoordinates.latitude,
-            longitude: originalCoordinates.longitude
-          })
-        } else {
-          setCoordinates({ latitude: null, longitude: null })
-        }
-        console.log('Geocoding failed on cancel:', error.message)
-      }
-    } else {
-      // If there's no address, restore original coordinates if they exist
-      if (originalCoordinates.latitude !== null && originalCoordinates.longitude !== null) {
-        setCoordinates({
-          latitude: originalCoordinates.latitude,
-          longitude: originalCoordinates.longitude
-        })
-      } else {
-        setCoordinates({ latitude: null, longitude: null })
-      }
-    }
-  }
-
-  // Handle address input with debounced geocoding
-  const handleAddressChange = (e) => {
-    const address = e.target.value
-    setFormData(prev => ({
-      ...prev,
-      address: address
-    }))
-    
-    // Clear coordinates when address changes
-    setCoordinates({ latitude: null, longitude: null })
-    
-    // Clear existing timeout
-    if (geocodeTimeoutRef.current) {
-      clearTimeout(geocodeTimeoutRef.current)
-    }
-    
-    // Geocode address after user stops typing (debounce)
-    if (address.trim().length > 5) {
-      geocodeTimeoutRef.current = setTimeout(async () => {
-        try {
-          await geocodeAddress(address)
-        } catch (error) {
-          // Silently fail - user will see error on submit if address is invalid
-          console.log('Geocoding failed:', error.message)
-        }
-      }, 1000)
-    }
-  }
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    if (addressTextareaRef.current) {
-      const textarea = addressTextareaRef.current
-      // Use requestAnimationFrame to ensure DOM is updated
-      requestAnimationFrame(() => {
-        // Reset height to auto to get accurate scrollHeight
-        textarea.style.height = '0px'
-        // Set height to scrollHeight to fit all content exactly
-        const scrollHeight = textarea.scrollHeight
-        textarea.style.height = `${scrollHeight}px`
-        // Ensure width is correct and text is visible
-        textarea.style.width = '100%'
-      })
     }
   }, [])
 
