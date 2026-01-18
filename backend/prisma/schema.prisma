@@ -10,7 +10,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -22,6 +21,7 @@ enum UserRole {
 enum ItemStatus {
   AVAILABLE
   HELD
+  VERIFYING
   PURCHASED
 }
 
@@ -32,6 +32,7 @@ model User {
   id           String    @id @default(uuid())
   email        String    @unique
   displayName  String
+  passwordHash String
   role         UserRole
   createdAt    DateTime  @default(now())
 
