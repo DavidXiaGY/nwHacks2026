@@ -1974,7 +1974,7 @@ function OrganizerUpload() {
                       justifyContent: 'flex-end', 
                       alignItems: 'center',
                       borderTop: '1px solid #06404D',
-                      zIndex: 10
+                      zIndex: 100
                     }}>
                       <button
                         onClick={() => setShowAddChildForm(true)}
@@ -1988,6 +1988,7 @@ function OrganizerUpload() {
                           fontSize: '16px',
                           fontWeight: 700,
                           cursor: 'pointer',
+                          transition: 'background-color 300ms ease'
                         }}
                         onMouseEnter={(e) => {
                           e.target.style.backgroundColor = '#D87A75'
