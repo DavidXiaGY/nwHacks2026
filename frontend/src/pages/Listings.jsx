@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import React from 'react'
 import OrphanageCard from '../components/OrphanageCard'
+import OrphanageCardSkeleton from '../components/OrphanageCardSkeleton'
 import { API_BASE_URL } from '../config.js'
 import orphanTrees from '../assets/orphanTrees.svg'
 import holly from '../assets/holly.svg'
@@ -261,8 +262,11 @@ function Listings(){
             {/* Content area with grid */}
             <div className="p-[48px] border-t-2 border-[#06404D]">
                 {loading ? (
-                    <div className="grid grid-cols-3 gap-6">
-                        <div className="col-span-3 body-default text-default">Loading orphanages...</div>
+                    <div className="grid grid-cols-3 gap-6 auto-rows-max">
+                        {/* Skeleton cards */}
+                        {[...Array(6)].map((_, index) => (
+                            <OrphanageCardSkeleton key={index} />
+                        ))}
                     </div>
                 ) : orphanages.length === 0 ? (
                     <div className="grid grid-cols-3 gap-6">

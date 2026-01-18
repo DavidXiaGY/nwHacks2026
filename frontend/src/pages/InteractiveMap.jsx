@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import OrphanageCard from '../components/OrphanageCard'
+import OrphanageCardSkeleton from '../components/OrphanageCardSkeleton'
 import { API_BASE_URL } from '../config.js'
 import holly from '../assets/holly.svg'
 import mitten from '../assets/mitten.svg'
@@ -230,8 +231,10 @@ function InteractiveMap() {
 
           <div className="p-4 space-y-4">
             {loading ? (
-              <div className="text-center py-8">
-                <p className="body-default text-secondary">Loading orphanages...</p>
+              <div className="space-y-4">
+                {[...Array(3)].map((_, index) => (
+                  <OrphanageCardSkeleton key={index} />
+                ))}
               </div>
             ) : orphanages.length === 0 ? (
               <div className="text-center py-8">
