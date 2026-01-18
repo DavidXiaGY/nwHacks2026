@@ -4,8 +4,26 @@ function WishlistItemRow({ item, onDonateItem, onDropDonation, currentUserId, is
   // Check if item is held by current user
   const isHeldByCurrentUser = item.status === 'HELD' && item.heldByUserId === currentUserId
 
+  // Check if item is held by someone else
+  const isHeldBySomeoneElse = item.status === 'HELD' && item.heldByUserId !== currentUserId
+
+  // Check if item is fulfilled
+  const isFulfilled = item.status === 'PURCHASED' || item.status === 'VERIFYING'
+
   // Determine if item is available for donation
   const isAvailable = item.status === 'AVAILABLE' || isHeldByCurrentUser
+
+  // Determine background and text colors based on state
+  let backgroundColor = 'transparent'
+  let textColor = '#06404D'
+  
+  if (isFulfilled) {
+    backgroundColor = '#DEFFEB'
+    textColor = '#648E9F'
+  } else if (isHeldBySomeoneElse) {
+    backgroundColor = '#DBF4FF'
+    textColor = '#648E9F'
+  }
 
   return (
     <div>
@@ -14,19 +32,33 @@ function WishlistItemRow({ item, onDonateItem, onDropDonation, currentUserId, is
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '12px 0',
-          borderBottom: isLast ? 'none' : '1px solid #EB8E89'
+          padding: '12px 16px',
+          borderBottom: isLast ? 'none' : '1px solid #EB8E89',
+          backgroundColor: backgroundColor
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
           <Paperclip 
             size={16} 
             style={{ 
-              color: '#06404D',
+              color: textColor,
               flexShrink: 0
             }} 
           />
-          {item.externalLink ? (
+          {isFulfilled ? (
+            // Fulfilled state: no link, just text
+            <span
+              style={{
+                fontFamily: "'Manrope', sans-serif",
+                fontSize: '16px',
+                fontWeight: 400,
+                lineHeight: '140%',
+                color: textColor
+              }}
+            >
+              {item.name}
+            </span>
+          ) : item.externalLink ? (
             <a
               href={item.externalLink}
               target="_blank"
@@ -36,7 +68,7 @@ function WishlistItemRow({ item, onDonateItem, onDropDonation, currentUserId, is
                 fontSize: '16px',
                 fontWeight: 400,
                 lineHeight: '140%',
-                color: '#06404D',
+                color: textColor,
                 textDecoration: 'underline',
                 cursor: 'pointer'
               }}
@@ -50,7 +82,7 @@ function WishlistItemRow({ item, onDonateItem, onDropDonation, currentUserId, is
                 fontSize: '16px',
                 fontWeight: 400,
                 lineHeight: '140%',
-                color: '#06404D',
+                color: textColor,
                 textDecoration: 'underline'
               }}
             >
@@ -110,24 +142,33 @@ function WishlistItemRow({ item, onDonateItem, onDropDonation, currentUserId, is
               e.target.style.backgroundColor = '#FFFFFF'
             }}
           >
-            Drop Donation
+            DROP DONATION
           </button>
         )}
-        {!isAvailable && !isHeldByCurrentUser && (
+        {isFulfilled && (
           <span
             style={{
               fontFamily: "'Manrope', sans-serif",
               fontSize: '14px',
               fontWeight: 400,
-              color: '#06404D',
+              color: textColor,
               marginLeft: '12px'
             }}
           >
-            {item.status === 'PURCHASED' || item.status === 'VERIFYING' 
-              ? 'Fulfilled' 
-              : item.status === 'HELD' 
-              ? 'Held by another donor'
-              : ''}
+            This order has been fulfilled!
+          </span>
+        )}
+        {isHeldBySomeoneElse && (
+          <span
+            style={{
+              fontFamily: "'Manrope', sans-serif",
+              fontSize: '14px',
+              fontWeight: 400,
+              color: textColor,
+              marginLeft: '12px'
+            }}
+          >
+            Someone is currently working on this order!
           </span>
         )}
       </div>
