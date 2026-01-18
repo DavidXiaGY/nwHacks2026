@@ -13,6 +13,14 @@ function OrganizerUpload() {
     latitude: '',
     longitude: ''
   })
+  const [originalFormData, setOriginalFormData] = useState({
+    name: '',
+    description: '',
+    website: '',
+    contactEmail: '',
+    latitude: '',
+    longitude: ''
+  })
   const [message, setMessage] = useState({ text: '', type: '' })
   const [loading, setLoading] = useState(false)
 
@@ -66,14 +74,16 @@ function OrganizerUpload() {
               type: 'info' 
             })
             // Pre-fill form with existing data
-            setFormData({
+            const orphanageData = {
               name: existingOrphanage.name || '',
               description: existingOrphanage.description || '',
               website: existingOrphanage.website || '',
               contactEmail: existingOrphanage.contactEmail || '',
               latitude: existingOrphanage.latitude?.toString() || '',
               longitude: existingOrphanage.longitude?.toString() || ''
-            })
+            }
+            setFormData(orphanageData)
+            setOriginalFormData(orphanageData)
           }
         }
       }
@@ -149,6 +159,16 @@ function OrganizerUpload() {
         setExistingOrphanageId(data.id)
       }
 
+      // Update original form data to reflect saved state
+      setOriginalFormData({
+        name: formData.name,
+        description: formData.description,
+        website: formData.website,
+        contactEmail: formData.contactEmail,
+        latitude: formData.latitude,
+        longitude: formData.longitude
+      })
+
       setMessage({ text: 'Orphanage information saved successfully!', type: 'success' })
 
     } catch (error) {
@@ -156,6 +176,20 @@ function OrganizerUpload() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCancel = () => {
+    // Restore original form data
+    setFormData({
+      name: originalFormData.name,
+      description: originalFormData.description,
+      website: originalFormData.website,
+      contactEmail: originalFormData.contactEmail,
+      latitude: originalFormData.latitude,
+      longitude: originalFormData.longitude
+    })
+    // Clear any messages
+    setMessage({ text: '', type: '' })
   }
 
   const logout = () => {
@@ -264,9 +298,14 @@ function OrganizerUpload() {
           />
         </div>
 
-        <button type="submit" disabled={loading || !isFormValid()}>
-          {loading ? 'Saving...' : 'Save'}
-        </button>
+        <div>
+          <button type="submit" disabled={loading || !isFormValid()}>
+            {loading ? 'Saving...' : 'Save'}
+          </button>
+          <button type="button" onClick={handleCancel} disabled={loading}>
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   )
