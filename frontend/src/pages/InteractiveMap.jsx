@@ -13,7 +13,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 })
 
-// Custom icon for user location
+// Custom icon for user location - using secondary color (#0F8F9E)
 const userIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -23,7 +23,7 @@ const userIcon = new L.Icon({
   shadowSize: [41, 41]
 })
 
-// Custom icon for highlighted orphanage
+// Custom icon for highlighted orphanage - using tertiary color (#EB8E89)
 const highlightedIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -33,7 +33,7 @@ const highlightedIcon = new L.Icon({
   shadowSize: [41, 41]
 })
 
-// Custom icon for regular orphanage
+// Custom icon for regular orphanage - using default color (#06404D)
 const orphanageIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -163,10 +163,10 @@ function InteractiveMap() {
 
   if (loading && !userLocation) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-[#FFFCFA]">
         <div className="text-center">
-          <p className="text-xl mb-4">Loading map...</p>
-          <p className="text-gray-600">Getting your location...</p>
+          <p className="heading-default text-default mb-4">Loading map...</p>
+          <p className="body-default text-secondary">Getting your location...</p>
         </div>
       </div>
     )
@@ -178,7 +178,7 @@ function InteractiveMap() {
     <div className="h-screen w-full flex flex-col">
       {error && (
         <div className="bg-[#FFFCFA] border-b border-[#06404D] p-4 z-10">
-          <p className="text-red-600 text-sm">{error}</p>
+          <p className="body-default text-tertiary">{error}</p>
         </div>
       )}
 
@@ -186,10 +186,10 @@ function InteractiveMap() {
         {/* Orphanage List Sidebar */}
         <div className="w-96 bg-[#FFFCFA] border-r border-[#06404D] overflow-y-auto">
           <div className="p-4 sticky top-0 bg-[#FFFCFA] border-b border-[#06404D] z-10">
-            <h2 className="text-2xl font-bold font-redhatdisplay text-[#06404D] mb-2">
+            <h2 className="heading-lg text-default mb-2">
               Orphanages
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="body-default text-secondary">
               {orphanages.length} {orphanages.length === 1 ? 'orphanage' : 'orphanages'} found
             </p>
           </div>
@@ -197,11 +197,11 @@ function InteractiveMap() {
           <div className="p-4 space-y-4">
             {loading ? (
               <div className="text-center py-8">
-                <p className="text-gray-600">Loading orphanages...</p>
+                <p className="body-default text-secondary">Loading orphanages...</p>
               </div>
             ) : orphanages.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-600">No orphanages found in your area.</p>
+                <p className="body-default text-secondary">No orphanages found in your area.</p>
               </div>
             ) : (
               orphanages.map((orphanage) => (
@@ -237,8 +237,8 @@ function InteractiveMap() {
             scrollWheelZoom={true}
           >
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
             />
             
             <MapController selectedOrphanage={selectedOrphanage} userLocation={userLocation} />
@@ -249,7 +249,11 @@ function InteractiveMap() {
                 position={[userLocation.lat, userLocation.lng]}
                 icon={userIcon}
               >
-                <Popup>Your Location</Popup>
+                <Popup>
+                  <div style={{ fontFamily: "'Manrope', sans-serif" }}>
+                    <p className="body-default text-secondary font-bold">Your Location</p>
+                  </div>
+                </Popup>
               </Marker>
             )}
 
@@ -266,13 +270,13 @@ function InteractiveMap() {
                 }}
               >
                 <Popup>
-                  <div className="p-2">
-                    <h3 className="font-bold text-lg mb-1">{orphanage.name}</h3>
+                  <div className="p-2" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                    <h3 className="heading-sm text-default mb-1">{orphanage.name}</h3>
                     {orphanage.description && (
-                      <p className="text-sm text-gray-600 mb-2">{orphanage.description}</p>
+                      <p className="body-default text-secondary mb-2">{orphanage.description}</p>
                     )}
                     {orphanage.distance !== undefined && (
-                      <p className="text-sm font-semibold text-blue-600">
+                      <p className="body-default text-tertiary font-bold">
                         {orphanage.distance.toFixed(2)} km away
                       </p>
                     )}
