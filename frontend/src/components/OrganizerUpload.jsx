@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Globe } from 'lucide-react'
 import OrphanageDetailBackground from '../assets/OrphanageDetailBackground.png'
 import ChildInfoCard from './ChildInfoCard'
+import ChildInfoCardSkeleton from './ChildInfoCardSkeleton'
 import WishlistItemRow from './WishlistItemRow'
 import DonationPopup from './DonationPopup'
 import { API_BASE_URL } from '../config.js'
@@ -1322,7 +1323,27 @@ function OrganizerUpload() {
                     <h2 className="sr-only">Existing Children</h2>
                     
                     {loadingChildren ? (
-                      <div className="body-default text-default">Loading children...</div>
+                      <div 
+                        style={{ 
+                          columnCount: 3,
+                          columnGap: '16px',
+                          columnFill: 'balance'
+                        }}
+                      >
+                        {[...Array(6)].map((_, index) => (
+                          <div
+                            key={index}
+                            style={{
+                              breakInside: 'avoid',
+                              marginBottom: '16px',
+                              pageBreakInside: 'avoid',
+                              WebkitColumnBreakInside: 'avoid'
+                            }}
+                          >
+                            <ChildInfoCardSkeleton />
+                          </div>
+                        ))}
+                      </div>
                     ) : children.length === 0 ? (
                       <div className="body-default text-default">No children added yet. Add a child below.</div>
                     ) : (
