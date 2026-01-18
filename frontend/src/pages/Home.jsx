@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import StatBlock from '../components/StatBlock'
+import marketingTitleImg from '../assets/marketingTitleImg.png'
+import marketingAboutUsImg from '../assets/marketingAboutUsImg.png'
 
 function Home() {
   // SVG Icons for stat blocks
@@ -41,44 +43,13 @@ function Home() {
     <div className="min-h-screen bg-[#FFFCFA]">
       {/* Hero Section */}
       <section className="relative w-full h-[600px] overflow-hidden">
-        {/* Background with snowy mountains */}
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-100 via-blue-50 to-white">
-          {/* Mountain illustration */}
-          <svg className="absolute bottom-0 w-full h-full" viewBox="0 0 1200 600" preserveAspectRatio="none">
-            {/* Sky gradient */}
-            <defs>
-              <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#E0F2FE" />
-                <stop offset="100%" stopColor="#F0F9FF" />
-              </linearGradient>
-              <linearGradient id="mountainGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#F8FAFC" />
-                <stop offset="100%" stopColor="#E2E8F0" />
-              </linearGradient>
-            </defs>
-            
-            {/* Sky */}
-            <rect width="1200" height="600" fill="url(#skyGradient)" />
-            
-            {/* Mountains */}
-            <path d="M 0 400 L 200 200 L 400 300 L 600 150 L 800 250 L 1000 180 L 1200 300 L 1200 600 L 0 600 Z" fill="url(#mountainGradient)" />
-            <path d="M 0 450 L 150 280 L 350 380 L 550 220 L 750 320 L 950 240 L 1200 350 L 1200 600 L 0 600 Z" fill="#F1F5F9" />
-            
-            {/* Snow caps */}
-            <path d="M 200 200 L 250 180 L 300 200 L 350 190 L 400 200" stroke="#FFFFFF" strokeWidth="8" fill="none" strokeLinecap="round" />
-            <path d="M 600 150 L 650 130 L 700 150 L 750 140 L 800 150" stroke="#FFFFFF" strokeWidth="8" fill="none" strokeLinecap="round" />
-            <path d="M 1000 180 L 1050 160 L 1100 180" stroke="#FFFFFF" strokeWidth="8" fill="none" strokeLinecap="round" />
-            
-            {/* Pine trees */}
-            {[150, 250, 450, 550, 750, 850, 1050].map((x, i) => (
-              <g key={i}>
-                <path d={`M ${x} 500 L ${x-20} 550 L ${x+20} 550 Z`} fill="#166534" />
-                <path d={`M ${x} 480 L ${x-15} 520 L ${x+15} 520 Z`} fill="#15803D" />
-                <path d={`M ${x} 460 L ${x-10} 490 L ${x+10} 490 Z`} fill="#16A34A" />
-                <rect x={x-3} y={550} width="6" height="50" fill="#92400E" />
-              </g>
-            ))}
-          </svg>
+        {/* Background with marketing title image */}
+        <div className="absolute inset-0">
+          <img 
+            src={marketingTitleImg} 
+            alt="Winter landscape with mountains and trees" 
+            className="w-full h-full object-cover"
+          />
         </div>
 
         {/* Hero Content */}
@@ -140,78 +111,12 @@ function Home() {
               </p>
             </div>
             <div className="bg-white rounded-xl shadow-lg p-4">
-              {/* Placeholder for illustration - using a styled div */}
-              <div className="w-full h-64 bg-gradient-to-br from-blue-50 to-pink-50 rounded-lg flex items-center justify-center relative overflow-hidden">
-                {/* Simple illustration using SVG */}
-                <svg viewBox="0 0 400 300" className="w-full h-full">
-                  {/* Background */}
-                  <rect width="400" height="300" fill="#F0F9FF" />
-                  
-                  {/* Snowy ground */}
-                  <rect x="0" y="200" width="400" height="100" fill="#F8FAFC" />
-                  
-                  {/* Pine trees in background */}
-                  {[50, 150, 250, 350].map((x, i) => (
-                    <g key={i}>
-                      <path d={`M ${x} 200 L ${x-15} 250 L ${x+15} 250 Z`} fill="#166534" />
-                      <path d={`M ${x} 180 L ${x-12} 220 L ${x+12} 220 Z`} fill="#15803D" />
-                      <rect x={x-2} y={250} width="4" height="50" fill="#92400E" />
-                    </g>
-                  ))}
-                  
-                  {/* Children and adult */}
-                  <circle cx="200" cy="180" r="15" fill="#FED7AA" />
-                  <path d="M 200 195 L 200 220 L 190 230 L 210 230 Z" fill="#EB8E89" />
-                  <circle cx="150" cy="190" r="12" fill="#FED7AA" />
-                  <path d="M 150 202 L 150 220 L 142 228 L 158 228 Z" fill="#EB8E89" />
-                  <circle cx="250" cy="190" r="12" fill="#FED7AA" />
-                  <path d="M 250 202 L 250 220 L 242 228 L 258 228 Z" fill="#EB8E89" />
-                  
-                  {/* Gift boxes */}
-                  <rect x="120" y="230" width="20" height="20" fill="#EB8E89" rx="2" />
-                  <rect x="260" y="230" width="20" height="20" fill="#EB8E89" rx="2" />
-                </svg>
-              </div>
+              <img 
+                src={marketingAboutUsImg} 
+                alt="Children and adult with gifts in winter setting" 
+                className="w-full h-auto rounded-lg"
+              />
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer Section with Background */}
-      <section className="relative w-full h-[400px] overflow-hidden">
-        {/* Background with snowy mountains */}
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-100 via-blue-50 to-white">
-          <svg className="absolute bottom-0 w-full h-full" viewBox="0 0 1200 400" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="skyGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#E0F2FE" />
-                <stop offset="100%" stopColor="#F0F9FF" />
-              </linearGradient>
-              <linearGradient id="mountainGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#F8FAFC" />
-                <stop offset="100%" stopColor="#E2E8F0" />
-              </linearGradient>
-            </defs>
-            
-            <rect width="1200" height="400" fill="url(#skyGradient2)" />
-            <path d="M 0 300 L 200 150 L 400 200 L 600 100 L 800 180 L 1000 120 L 1200 200 L 1200 400 L 0 400 Z" fill="url(#mountainGradient2)" />
-            <path d="M 0 350 L 150 220 L 350 280 L 550 180 L 750 250 L 950 200 L 1200 280 L 1200 400 L 0 400 Z" fill="#F1F5F9" />
-            
-            {[150, 250, 450, 550, 750, 850, 1050].map((x, i) => (
-              <g key={i}>
-                <path d={`M ${x} 350 L ${x-20} 400 L ${x+20} 400 Z`} fill="#166534" />
-                <path d={`M ${x} 330 L ${x-15} 370 L ${x+15} 370 Z`} fill="#15803D" />
-                <path d={`M ${x} 310 L ${x-10} 340 L ${x+10} 340 Z`} fill="#16A34A" />
-                <rect x={x-3} y={400} width="6" height="50" fill="#92400E" />
-              </g>
-            ))}
-          </svg>
-        </div>
-
-        {/* Footer Content */}
-        <div className="relative z-10 flex items-center h-full px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-5xl font-bold text-[#06384D]">About Us</h2>
           </div>
         </div>
       </section>
