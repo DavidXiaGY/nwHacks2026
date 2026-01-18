@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Text Colors */
+    --color-text-default: #06384D;
+    --color-text-secondary: #0F8F9E;
+    --color-text-tertiary: #EB8E89;
+    
+    /* Surface Colors */
+    --color-surface-default: #FFFFFF;
+    --color-surface-secondary: #F7F7F7;
+    
+    /* Border Colors */
+    --color-border-muted: #E9E9E9;
+    
+    /* Button Colors */
+    --color-button-bg-primary: #EB8E89;
+    --color-button-bg-secondary: #06384D;
+  }
+}
+
 @layer utilities {
   .font-heading {
     font-family: 'Red Hat Display', sans-serif;
@@ -10,4 +30,89 @@
   .font-body {
     font-family: 'Manrope', sans-serif;
   }
+
+  /* Heading Styles */
+  .heading-xl {
+    font-family: 'Red Hat Display', sans-serif;
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 120%;
+  }
+
+  .heading-lg {
+    font-family: 'Red Hat Display', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 120%;
+  }
+
+  .heading-default {
+    font-family: 'Red Hat Display', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 120%;
+  }
+
+  .heading-sm {
+    font-family: 'Red Hat Display', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 120%;
+  }
+
+  .heading-xs {
+    font-family: 'Red Hat Display', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 120%;
+  }
+
+  /* Body Styles */
+  .body-lg {
+    font-family: 'Manrope', sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 140%;
+  }
+
+  .body-default {
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 140%;
+  }
+
+  /* Color Utilities */
+  .text-default {
+    color: var(--color-text-default);
+  }
+
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .text-tertiary {
+    color: var(--color-text-tertiary);
+  }
+
+  .surface-default {
+    background-color: var(--color-surface-default);
+  }
+
+  .surface-secondary {
+    background-color: var(--color-surface-secondary);
+  }
+
+  .border-muted {
+    border-color: var(--color-border-muted);
+  }
+
+  .button-bg-primary {
+    background-color: var(--color-button-bg-primary);
+  }
+
+  .button-bg-secondary {
+    background-color: var(--color-button-bg-secondary);
+  }
 }
+

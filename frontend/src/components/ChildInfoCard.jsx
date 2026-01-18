@@ -24,7 +24,7 @@ function ChildInfoCard({ child, onClick }) {
           lineHeight: '120%',
           color: '#06404D',
           textTransform: 'uppercase',
-          marginBottom: '16px',
+          marginBottom: '0px',
         }}
       >
         {firstName?.toUpperCase() || 'CHILD'}
@@ -42,8 +42,9 @@ function ChildInfoCard({ child, onClick }) {
           marginBottom: '16px',
         }}
       >
-        {age ? `${age} years old` : 'Age not specified'}
-        {gender && `, ${gender}`}
+        {age ? `${age} years old` : ''}
+        {age && gender ? ', ' : ''}
+        {gender || ''}
       </p>
 
       {/* Wishlist Section */}
@@ -88,7 +89,7 @@ function ChildInfoCard({ child, onClick }) {
       )}
 
       {/* Interests Section */}
-      {interests && (
+      {interests && typeof interests === 'string' && interests.trim() !== '' && (
         <div>
           {/* Eyebrow: INTERESTS - Red Hat Display 900, 100% line height, 0.42px letter spacing, #EB8E89 */}
           <p

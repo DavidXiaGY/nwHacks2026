@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Globe } from 'lucide-react'
+import OrphanageDetailBackground from '../assets/OrphanageDetailBackground.png'
+import ChildInfoCard from './ChildInfoCard'
 
 function OrganizerUpload() {
   const navigate = useNavigate()
@@ -608,16 +611,13 @@ function OrganizerUpload() {
   }
 
   return (
-    <div>
-      <div>
-        <div>Logged in as: <strong>{user.displayName}</strong></div>
-        <div>Email: <strong>{user.email}</strong></div>
-        <button type="button" onClick={logout}>Logout</button>
-      </div>
-      
-      <h1>Orphanage Information</h1>
-      
-      {message.text && (
+    <div className="relative h-screen overflow-hidden">
+      <h1 className="sr-only">
+        {formData.name || "Orphanage Information"}
+      </h1>
+
+      {/* Status message */}
+      {/* {message.text && (
         <div style={{
           padding: '10px',
           marginBottom: '10px',
@@ -628,53 +628,88 @@ function OrganizerUpload() {
         }}>
           {message.text}
         </div>
-      )}
+      )} */}
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="name">Orphanage Name *</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
+      <div className="flex flex-row h-screen">
+        {/* Left Panel - Back button and Orphanage Info */}
+        <div className="p-[32px] flex flex-col h-full overflow-y-auto flex-[0_0_45%]">
+          <div className="mb-6">
+            <button 
+              type="button" 
+              onClick={() => navigate(-1)}
+              className="text-text-secondary heading-xs hover:text-text-default transition-colors"
+            >
+              Back to Listings
+            </button>
+          </div>
 
-        <div>
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-          />
-        </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <div>
+              <label htmlFor="name" className="sr-only">Orphanage Name *</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+                className="heading-xl text-default"
+                placeholder="Enter orphanage name"
+                aria-label="Orphanage Name"
+                aria-required="true"
+              />
+            </div>
 
-        <div>
-          <label htmlFor="website">Website URL</label>
-          <input
-            type="url"
-            id="website"
-            name="website"
-            value={formData.website}
-            onChange={handleInputChange}
-            placeholder="https://example.com"
-          />
-        </div>
+            <div>
+              <label htmlFor="description" className="sr-only">Description</label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                className="body-lg text-default"
+                placeholder="Enter orphanage description"
+                aria-label="Orphanage Description"
+                rows={4}
+              />
+            </div>
 
-        <div>
-          <label htmlFor="contactEmail">Contact Email</label>
-          <input
-            type="email"
-            id="contactEmail"
-            name="contactEmail"
-            value={formData.contactEmail}
-            onChange={handleInputChange}
-          />
-        </div>
+            <div>
+              <label htmlFor="website" className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="size-6 text-secondary  ">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+                <span className="text-secondary heading-sm">
+                  Website</span>
+              </label>
+              <input
+                type="url"
+                id="website"
+                name="website"
+                value={formData.website}
+                onChange={handleInputChange}
+                placeholder="https://example.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="contactEmail" className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6 text-secondary">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+
+                <span className="text-secondary heading-sm">
+                  Contact Email
+                </span>
+              </label>
+              <input
+                type="email"
+                id="contactEmail"
+                name="contactEmail"
+                value={formData.contactEmail}
+                onChange={handleInputChange}
+              />
+            </div>
 
         <div>
           <label htmlFor="address">Address *</label>
@@ -705,257 +740,253 @@ function OrganizerUpload() {
           )}
         </div>
 
-        <div>
-          <button type="submit" disabled={loading || !isFormValid()}>
-            {loading ? 'Saving...' : 'Save'}
-          </button>
-          <button type="button" onClick={handleCancel} disabled={loading}>
-            Cancel
-          </button>
-        </div>
-      </form>
-
-      {existingOrphanageId && (
-        <>
-          <h2>Add Children</h2>
-          
-          {childMessage.text && (
-            <div style={{
-              padding: '10px',
-              marginBottom: '10px',
-              borderRadius: '4px',
-              backgroundColor: childMessage.type === 'success' ? '#d4edda' : childMessage.type === 'error' ? '#f8d7da' : '#d1ecf1',
-              color: childMessage.type === 'success' ? '#155724' : childMessage.type === 'error' ? '#721c24' : '#0c5460',
-              border: `1px solid ${childMessage.type === 'success' ? '#c3e6cb' : childMessage.type === 'error' ? '#f5c6cb' : '#bee5eb'}`
-            }}>
-              {childMessage.text}
-            </div>
-          )}
-
-          <form onSubmit={handleChildSubmit}>
-            <h3>Child Information</h3>
-            
             <div>
-              <label htmlFor="firstName">First Name *</label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={childFormData.firstName}
-                onChange={handleChildInputChange}
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="age">Age</label>
-              <input
-                type="number"
-                id="age"
-                name="age"
-                min="0"
-                max="120"
-                value={childFormData.age}
-                onChange={handleChildInputChange}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="gender">Gender</label>
-              <input
-                type="text"
-                id="gender"
-                name="gender"
-                value={childFormData.gender}
-                onChange={handleChildInputChange}
-                placeholder="e.g., male, female, non-binary"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="clothingShirtSize">Shirt Size</label>
-              <input
-                type="text"
-                id="clothingShirtSize"
-                name="clothingShirtSize"
-                value={childFormData.clothingShirtSize}
-                onChange={handleChildInputChange}
-                placeholder="e.g., Youth Medium"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="clothingPantSize">Pant Size</label>
-              <input
-                type="text"
-                id="clothingPantSize"
-                name="clothingPantSize"
-                value={childFormData.clothingPantSize}
-                onChange={handleChildInputChange}
-                placeholder="e.g., Youth 8"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="clothingShoeSize">Shoe Size</label>
-              <input
-                type="text"
-                id="clothingShoeSize"
-                name="clothingShoeSize"
-                value={childFormData.clothingShoeSize}
-                onChange={handleChildInputChange}
-                placeholder="e.g., Youth 2 (US)"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="clothingToyPreference">Clothing/Toy Preference</label>
-              <input
-                type="text"
-                id="clothingToyPreference"
-                name="clothingToyPreference"
-                value={childFormData.clothingToyPreference}
-                onChange={handleChildInputChange}
-                placeholder="e.g., Masculine, Feminine, Neutral"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="interests">Interests</label>
-              <textarea
-                id="interests"
-                name="interests"
-                value={childFormData.interests}
-                onChange={handleChildInputChange}
-                placeholder="e.g., Loves art, drawing, and music"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="notes">Notes</label>
-              <textarea
-                id="notes"
-                name="notes"
-                value={childFormData.notes}
-                onChange={handleChildInputChange}
-                placeholder="Other notes for the child"
-              />
-            </div>
-
-            <h3>Wishlist Items</h3>
-            
-            {wishlistItems.map((item, index) => (
-              <div key={index} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '4px' }}>
-                <div>
-                  <label htmlFor={`wishlist-name-${index}`}>Item Name *</label>
-                  <input
-                    type="text"
-                    id={`wishlist-name-${index}`}
-                    value={item.name}
-                    onChange={(e) => handleWishlistItemChange(index, 'name', e.target.value)}
-                    placeholder="e.g., LEGO Set"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor={`wishlist-link-${index}`}>External Link *</label>
-                  <input
-                    type="url"
-                    id={`wishlist-link-${index}`}
-                    value={item.externalLink}
-                    onChange={(e) => handleWishlistItemChange(index, 'externalLink', e.target.value)}
-                    placeholder="https://www.amazon.com/item"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor={`wishlist-description-${index}`}>Description</label>
-                  <textarea
-                    id={`wishlist-description-${index}`}
-                    value={item.description}
-                    onChange={(e) => handleWishlistItemChange(index, 'description', e.target.value)}
-                    placeholder="Optional description"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor={`wishlist-price-${index}`}>Price</label>
-                  <input
-                    type="number"
-                    id={`wishlist-price-${index}`}
-                    step="0.01"
-                    min="0"
-                    value={item.price}
-                    onChange={(e) => handleWishlistItemChange(index, 'price', e.target.value)}
-                    placeholder="29.99"
-                  />
-                </div>
-
-                {wishlistItems.length > 1 && (
-                  <button type="button" onClick={() => removeWishlistItem(index)}>
-                    Remove Item
-                  </button>
-                )}
-              </div>
-            ))}
-
-            <button type="button" onClick={addWishlistItem}>
-              Add Another Wishlist Item
-            </button>
-
-            <div>
-              <button type="submit" disabled={childLoading || !isChildFormValid()}>
-                {childLoading ? 'Adding...' : 'Add Child'}
+              <button type="submit" disabled={loading || !isFormValid()}>
+                {loading ? 'Saving...' : 'Save'}
+              </button>
+              <button type="button" onClick={handleCancel} disabled={loading}>
+                Cancel
               </button>
             </div>
           </form>
+        </div>
 
-          <h2>Existing Children</h2>
-          
-          {loadingChildren ? (
-            <div>Loading children...</div>
-          ) : children.length === 0 ? (
-            <div>No children added yet. Add a child above.</div>
-          ) : (
-            <div>
-              {children.map((child) => (
-                <div key={child.id} style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', borderRadius: '4px' }}>
-                  <h3>{child.firstName}</h3>
-                  {child.age && <div>Age: {child.age}</div>}
-                  {child.gender && <div>Gender: {child.gender}</div>}
-                  {child.clothingShirtSize && <div>Shirt Size: {child.clothingShirtSize}</div>}
-                  {child.clothingPantSize && <div>Pant Size: {child.clothingPantSize}</div>}
-                  {child.clothingShoeSize && <div>Shoe Size: {child.clothingShoeSize}</div>}
-                  {child.clothingToyPreference && <div>Preference: {child.clothingToyPreference}</div>}
-                  {child.interests && <div>Interests: {child.interests}</div>}
-                  {child.notes && <div>Notes: {child.notes}</div>}
-                  
-                  {child.wishlist && child.wishlist.length > 0 && (
-                    <div>
-                      <h4>Wishlist Items:</h4>
-                      <ul>
-                        {child.wishlist.map((item) => (
-                          <li key={item.id}>
-                            <strong>{item.name}</strong>
-                            {item.description && <div>{item.description}</div>}
-                            <div><a href={item.externalLink} target="_blank" rel="noopener noreferrer">{item.externalLink}</a></div>
-                            {item.price && <div>Price: ${item.price}</div>}
-                            <div>Status: {item.status}</div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+        {/* Background Image - Absolute positioned at bottom of viewport */}
+        <div className="absolute bottom-0 left-0 w-[45%] z-[-1000]">
+          <img 
+            src={OrphanageDetailBackground} 
+            alt="Orphanage detail background" 
+            className="w-full h-auto object-contain"
+          />
+        </div>
+
+        {/* Right Panel */}
+        <div className="flex-1 bg-surface-secondary p-[32px] h-full overflow-y-auto min-w-0">
+          {existingOrphanageId && (
+            <>
+              <h2 className="sr-only">Existing Children</h2>
+              
+              {loadingChildren ? (
+                <div className="body-default text-default">Loading children...</div>
+              ) : children.length === 0 ? (
+                <div className="body-default text-default">No children added yet. Add a child above.</div>
+              ) : (
+                <div className="grid grid-cols-3 gap-4">
+                  {children.map((child) => (
+                    <ChildInfoCard 
+                      key={child.id}
+                      child={{
+                        firstName: child.firstName,
+                        age: child.age,
+                        gender: child.gender,
+                        wishlist: child.wishlist || [],
+                        interests: child.interests
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+        {existingOrphanageId && (
+          <>
+            {/* <h2>Add Children</h2>
+            
+            {childMessage.text && (
+              <div style={{
+                padding: '10px',
+                marginBottom: '10px',
+                borderRadius: '4px',
+                backgroundColor: childMessage.type === 'success' ? '#d4edda' : childMessage.type === 'error' ? '#f8d7da' : '#d1ecf1',
+                color: childMessage.type === 'success' ? '#155724' : childMessage.type === 'error' ? '#721c24' : '#0c5460',
+                border: `1px solid ${childMessage.type === 'success' ? '#c3e6cb' : childMessage.type === 'error' ? '#f5c6cb' : '#bee5eb'}`
+              }}>
+                {childMessage.text}
+              </div>
+            )} */}
+
+            {/* <form onSubmit={handleChildSubmit}>
+              <h3>Child Information</h3>
+              
+              <div>
+                <label htmlFor="firstName">First Name *</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={childFormData.firstName}
+                  onChange={handleChildInputChange}
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="age">Age</label>
+                <input
+                  type="number"
+                  id="age"
+                  name="age"
+                  min="0"
+                  max="120"
+                  value={childFormData.age}
+                  onChange={handleChildInputChange}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="gender">Gender</label>
+                <input
+                  type="text"
+                  id="gender"
+                  name="gender"
+                  value={childFormData.gender}
+                  onChange={handleChildInputChange}
+                  placeholder="e.g., male, female, non-binary"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="clothingShirtSize">Shirt Size</label>
+                <input
+                  type="text"
+                  id="clothingShirtSize"
+                  name="clothingShirtSize"
+                  value={childFormData.clothingShirtSize}
+                  onChange={handleChildInputChange}
+                  placeholder="e.g., Youth Medium"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="clothingPantSize">Pant Size</label>
+                <input
+                  type="text"
+                  id="clothingPantSize"
+                  name="clothingPantSize"
+                  value={childFormData.clothingPantSize}
+                  onChange={handleChildInputChange}
+                  placeholder="e.g., Youth 8"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="clothingShoeSize">Shoe Size</label>
+                <input
+                  type="text"
+                  id="clothingShoeSize"
+                  name="clothingShoeSize"
+                  value={childFormData.clothingShoeSize}
+                  onChange={handleChildInputChange}
+                  placeholder="e.g., Youth 2 (US)"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="clothingToyPreference">Clothing/Toy Preference</label>
+                <input
+                  type="text"
+                  id="clothingToyPreference"
+                  name="clothingToyPreference"
+                  value={childFormData.clothingToyPreference}
+                  onChange={handleChildInputChange}
+                  placeholder="e.g., Masculine, Feminine, Neutral"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="interests">Interests</label>
+                <textarea
+                  id="interests"
+                  name="interests"
+                  value={childFormData.interests}
+                  onChange={handleChildInputChange}
+                  placeholder="e.g., Loves art, drawing, and music"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="notes">Notes</label>
+                <textarea
+                  id="notes"
+                  name="notes"
+                  value={childFormData.notes}
+                  onChange={handleChildInputChange}
+                  placeholder="Other notes for the child"
+                />
+              </div>
+
+              <h3>Wishlist Items</h3>
+              
+              {wishlistItems.map((item, index) => (
+                <div key={index} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '4px' }}>
+                  <div>
+                    <label htmlFor={`wishlist-name-${index}`}>Item Name *</label>
+                    <input
+                      type="text"
+                      id={`wishlist-name-${index}`}
+                      value={item.name}
+                      onChange={(e) => handleWishlistItemChange(index, 'name', e.target.value)}
+                      placeholder="e.g., LEGO Set"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor={`wishlist-link-${index}`}>External Link *</label>
+                    <input
+                      type="url"
+                      id={`wishlist-link-${index}`}
+                      value={item.externalLink}
+                      onChange={(e) => handleWishlistItemChange(index, 'externalLink', e.target.value)}
+                      placeholder="https://www.amazon.com/item"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor={`wishlist-description-${index}`}>Description</label>
+                    <textarea
+                      id={`wishlist-description-${index}`}
+                      value={item.description}
+                      onChange={(e) => handleWishlistItemChange(index, 'description', e.target.value)}
+                      placeholder="Optional description"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor={`wishlist-price-${index}`}>Price</label>
+                    <input
+                      type="number"
+                      id={`wishlist-price-${index}`}
+                      step="0.01"
+                      min="0"
+                      value={item.price}
+                      onChange={(e) => handleWishlistItemChange(index, 'price', e.target.value)}
+                      placeholder="29.99"
+                    />
+                  </div>
+
+                  {wishlistItems.length > 1 && (
+                    <button type="button" onClick={() => removeWishlistItem(index)}>
+                      Remove Item
+                    </button>
                   )}
-                  
-                  <button type="button" onClick={() => handleDeleteChild(child.id)}>
-                    Delete Child
-                  </button>
                 </div>
               ))}
-            </div>
-          )}
-        </>
-      )}
+
+              <button type="button" onClick={addWishlistItem}>
+                Add Another Wishlist Item
+              </button>
+
+              <div>
+                <button type="submit" disabled={childLoading || !isChildFormValid()}>
+                  {childLoading ? 'Adding...' : 'Add Child'}
+                </button>
+              </div>
+            </form> */}
+          </>
+        )}
     </div>
   )
 }
