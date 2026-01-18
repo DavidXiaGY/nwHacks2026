@@ -333,8 +333,8 @@ router.delete('/:itemId/hold', authenticate, async (req, res, next) => {
     // Check if hold is expired
     const isExpired = item.holdExpiresAt && new Date(item.holdExpiresAt) < new Date()
 
-    // Allow deletion if: expired, or user is the holder, or user is an organizer/admin
-    if (!isExpired && item.heldByUserId !== req.userId && req.userRole !== 'ORGANIZER' && req.userRole !== 'ADMIN') {
+    // Allow deletion if: expired, or user is the holder, or user is an organizer
+    if (!isExpired && item.heldByUserId !== req.userId && req.userRole !== 'ORGANIZER') {
       return res.status(403).json({ error: 'You cannot cancel this hold' })
     }
 

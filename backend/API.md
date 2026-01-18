@@ -526,7 +526,7 @@ Release a held item (Donator only - can only release own holds).
 ---
 
 ### DELETE /api/wishlist/:itemId/hold
-Cancel/delete a hold. Can be used by the holder, organizer, or admin. Expired holds can also be cancelled by anyone.
+Cancel/delete a hold. Can be used by the holder or organizer. Expired holds can also be cancelled by anyone.
 
 **Headers:** `Authorization: Bearer <token>`
 

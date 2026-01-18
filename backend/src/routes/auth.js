@@ -20,9 +20,9 @@ async function handleSignup(req, res) {
     }
 
     // Validate role
-    if (!['DONATOR', 'ORGANIZER', 'ADMIN'].includes(role)) {
+    if (!['DONATOR', 'ORGANIZER'].includes(role)) {
       return res.status(400).json({ 
-        message: 'Invalid role. Must be DONATOR, ORGANIZER, or ADMIN' 
+        message: 'Invalid role. Must be DONATOR or ORGANIZER' 
       })
     }
 

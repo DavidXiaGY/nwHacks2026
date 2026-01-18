@@ -194,7 +194,6 @@ function LoginSignup() {
               >
                 <option value="DONATOR">Donator</option>
                 <option value="ORGANIZER">Organizer</option>
-                <option value="ADMIN">Admin</option>
               </select>
             </div>
           </>
