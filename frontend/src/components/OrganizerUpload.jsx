@@ -23,6 +23,24 @@ function OrganizerUpload() {
   })
   const [message, setMessage] = useState({ text: '', type: '' })
   const [loading, setLoading] = useState(false)
+  
+  // Child upload state
+  const [children, setChildren] = useState([])
+  const [childFormData, setChildFormData] = useState({
+    firstName: '',
+    age: '',
+    gender: '',
+    clothingShirtSize: '',
+    clothingPantSize: '',
+    clothingShoeSize: '',
+    clothingToyPreference: '',
+    interests: '',
+    notes: ''
+  })
+  const [wishlistItems, setWishlistItems] = useState([{ name: '', description: '', externalLink: '', price: '' }])
+  const [childMessage, setChildMessage] = useState({ text: '', type: '' })
+  const [childLoading, setChildLoading] = useState(false)
+  const [loadingChildren, setLoadingChildren] = useState(false)
 
   const API_BASE_URL = '/api'
 
@@ -84,6 +102,8 @@ function OrganizerUpload() {
             }
             setFormData(orphanageData)
             setOriginalFormData(orphanageData)
+            // Load children for this orphanage
+            loadChildren(existingOrphanage.id, token)
           }
         }
       }
@@ -155,6 +175,7 @@ function OrganizerUpload() {
       }
 
       // If we created a new orphanage, store its ID
+      const orphanageId = method === 'POST' && data.id ? data.id : existingOrphanageId
       if (method === 'POST' && data.id) {
         setExistingOrphanageId(data.id)
       }
@@ -170,6 +191,11 @@ function OrganizerUpload() {
       })
 
       setMessage({ text: 'Orphanage information saved successfully!', type: 'success' })
+      
+      // Reload children if orphanage exists
+      if (orphanageId) {
+        await loadChildren(orphanageId, token)
+      }
 
     } catch (error) {
       setMessage({ text: error.message || 'Save failed. Please try again.', type: 'error' })
@@ -195,6 +221,196 @@ function OrganizerUpload() {
   const logout = () => {
     localStorage.clear()
     navigate('/login')
+  }
+
+  // Load children for the orphanage
+  const loadChildren = async (orphanageId, token) => {
+    if (!orphanageId) return
+    
+    setLoadingChildren(true)
+    try {
+      const response = await fetch(`${API_BASE_URL}/children/orphanage/${orphanageId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const childrenData = await response.json()
+        setChildren(childrenData)
+      }
+    } catch (error) {
+      console.error('Error loading children:', error)
+    } finally {
+      setLoadingChildren(false)
+    }
+  }
+
+  // Handle child form input changes
+  const handleChildInputChange = (e) => {
+    const { name, value } = e.target
+    setChildFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  // Handle wishlist item changes
+  const handleWishlistItemChange = (index, field, value) => {
+    const updated = [...wishlistItems]
+    updated[index] = { ...updated[index], [field]: value }
+    setWishlistItems(updated)
+  }
+
+  // Add a new wishlist item field
+  const addWishlistItem = () => {
+    setWishlistItems([...wishlistItems, { name: '', description: '', externalLink: '', price: '' }])
+  }
+
+  // Remove a wishlist item field
+  const removeWishlistItem = (index) => {
+    if (wishlistItems.length > 1) {
+      setWishlistItems(wishlistItems.filter((_, i) => i !== index))
+    }
+  }
+
+  // Validate child form
+  const isChildFormValid = () => {
+    if (!existingOrphanageId) return false
+    if (!childFormData.firstName.trim()) return false
+    
+    // Validate wishlist items - if partially filled, both name and externalLink are required
+    // Empty items are allowed and will be filtered out on submit
+    for (const item of wishlistItems) {
+      const hasName = item.name.trim() !== ''
+      const hasLink = item.externalLink.trim() !== ''
+      // If either field is filled, both must be filled
+      if ((hasName && !hasLink) || (hasLink && !hasName)) {
+        return false
+      }
+    }
+    
+    return true
+  }
+
+  // Submit child with wishlist items
+  const handleChildSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (!existingOrphanageId) {
+      setChildMessage({ text: 'Please create an orphanage first', type: 'error' })
+      return
+    }
+
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setChildMessage({ text: 'Please login again.', type: 'error' })
+      logout()
+      return
+    }
+
+    // Filter out empty wishlist items and validate
+    const validWishlistItems = wishlistItems
+      .filter(item => item.name.trim() !== '' && item.externalLink.trim() !== '')
+      .map(item => ({
+        name: item.name.trim(),
+        description: item.description.trim() || undefined,
+        externalLink: item.externalLink.trim(),
+        price: item.price.trim() ? parseFloat(item.price) : undefined
+      }))
+
+    const submitData = {
+      firstName: childFormData.firstName.trim(),
+      orphanageId: existingOrphanageId,
+      age: childFormData.age.trim() ? parseInt(childFormData.age) : undefined,
+      gender: childFormData.gender.trim() || undefined,
+      clothingShirtSize: childFormData.clothingShirtSize.trim() || undefined,
+      clothingPantSize: childFormData.clothingPantSize.trim() || undefined,
+      clothingShoeSize: childFormData.clothingShoeSize.trim() || undefined,
+      clothingToyPreference: childFormData.clothingToyPreference.trim() || undefined,
+      interests: childFormData.interests.trim() || undefined,
+      notes: childFormData.notes.trim() || undefined,
+      wishlistItems: validWishlistItems
+    }
+
+    setChildLoading(true)
+    setChildMessage({ text: '', type: '' })
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/children`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(submitData)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Failed to add child')
+      }
+
+      // Reset form
+      setChildFormData({
+        firstName: '',
+        age: '',
+        gender: '',
+        clothingShirtSize: '',
+        clothingPantSize: '',
+        clothingShoeSize: '',
+        clothingToyPreference: '',
+        interests: '',
+        notes: ''
+      })
+      setWishlistItems([{ name: '', description: '', externalLink: '', price: '' }])
+      
+      // Reload children
+      await loadChildren(existingOrphanageId, token)
+      
+      setChildMessage({ text: 'Child added successfully!', type: 'success' })
+
+    } catch (error) {
+      setChildMessage({ text: error.message || 'Failed to add child. Please try again.', type: 'error' })
+    } finally {
+      setChildLoading(false)
+    }
+  }
+
+  // Delete a child
+  const handleDeleteChild = async (childId) => {
+    if (!window.confirm('Are you sure you want to delete this child? This will also delete all their wishlist items.')) {
+      return
+    }
+
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setChildMessage({ text: 'Please login again.', type: 'error' })
+      logout()
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/children/${childId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to delete child')
+      }
+
+      // Reload children
+      await loadChildren(existingOrphanageId, token)
+      setChildMessage({ text: 'Child deleted successfully', type: 'success' })
+
+    } catch (error) {
+      setChildMessage({ text: error.message || 'Failed to delete child', type: 'error' })
+    }
   }
 
   if (!user) {
@@ -307,6 +523,248 @@ function OrganizerUpload() {
           </button>
         </div>
       </form>
+
+      {existingOrphanageId && (
+        <>
+          <h2>Add Children</h2>
+          
+          {childMessage.text && (
+            <div style={{
+              padding: '10px',
+              marginBottom: '10px',
+              borderRadius: '4px',
+              backgroundColor: childMessage.type === 'success' ? '#d4edda' : childMessage.type === 'error' ? '#f8d7da' : '#d1ecf1',
+              color: childMessage.type === 'success' ? '#155724' : childMessage.type === 'error' ? '#721c24' : '#0c5460',
+              border: `1px solid ${childMessage.type === 'success' ? '#c3e6cb' : childMessage.type === 'error' ? '#f5c6cb' : '#bee5eb'}`
+            }}>
+              {childMessage.text}
+            </div>
+          )}
+
+          <form onSubmit={handleChildSubmit}>
+            <h3>Child Information</h3>
+            
+            <div>
+              <label htmlFor="firstName">First Name *</label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={childFormData.firstName}
+                onChange={handleChildInputChange}
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="age">Age</label>
+              <input
+                type="number"
+                id="age"
+                name="age"
+                min="0"
+                max="120"
+                value={childFormData.age}
+                onChange={handleChildInputChange}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="gender">Gender</label>
+              <input
+                type="text"
+                id="gender"
+                name="gender"
+                value={childFormData.gender}
+                onChange={handleChildInputChange}
+                placeholder="e.g., male, female, non-binary"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="clothingShirtSize">Shirt Size</label>
+              <input
+                type="text"
+                id="clothingShirtSize"
+                name="clothingShirtSize"
+                value={childFormData.clothingShirtSize}
+                onChange={handleChildInputChange}
+                placeholder="e.g., Youth Medium"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="clothingPantSize">Pant Size</label>
+              <input
+                type="text"
+                id="clothingPantSize"
+                name="clothingPantSize"
+                value={childFormData.clothingPantSize}
+                onChange={handleChildInputChange}
+                placeholder="e.g., Youth 8"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="clothingShoeSize">Shoe Size</label>
+              <input
+                type="text"
+                id="clothingShoeSize"
+                name="clothingShoeSize"
+                value={childFormData.clothingShoeSize}
+                onChange={handleChildInputChange}
+                placeholder="e.g., Youth 2 (US)"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="clothingToyPreference">Clothing/Toy Preference</label>
+              <input
+                type="text"
+                id="clothingToyPreference"
+                name="clothingToyPreference"
+                value={childFormData.clothingToyPreference}
+                onChange={handleChildInputChange}
+                placeholder="e.g., Masculine, Feminine, Neutral"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="interests">Interests</label>
+              <textarea
+                id="interests"
+                name="interests"
+                value={childFormData.interests}
+                onChange={handleChildInputChange}
+                placeholder="e.g., Loves art, drawing, and music"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="notes">Notes</label>
+              <textarea
+                id="notes"
+                name="notes"
+                value={childFormData.notes}
+                onChange={handleChildInputChange}
+                placeholder="Other notes for the child"
+              />
+            </div>
+
+            <h3>Wishlist Items</h3>
+            
+            {wishlistItems.map((item, index) => (
+              <div key={index} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '4px' }}>
+                <div>
+                  <label htmlFor={`wishlist-name-${index}`}>Item Name *</label>
+                  <input
+                    type="text"
+                    id={`wishlist-name-${index}`}
+                    value={item.name}
+                    onChange={(e) => handleWishlistItemChange(index, 'name', e.target.value)}
+                    placeholder="e.g., LEGO Set"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor={`wishlist-link-${index}`}>External Link *</label>
+                  <input
+                    type="url"
+                    id={`wishlist-link-${index}`}
+                    value={item.externalLink}
+                    onChange={(e) => handleWishlistItemChange(index, 'externalLink', e.target.value)}
+                    placeholder="https://www.amazon.com/item"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor={`wishlist-description-${index}`}>Description</label>
+                  <textarea
+                    id={`wishlist-description-${index}`}
+                    value={item.description}
+                    onChange={(e) => handleWishlistItemChange(index, 'description', e.target.value)}
+                    placeholder="Optional description"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor={`wishlist-price-${index}`}>Price</label>
+                  <input
+                    type="number"
+                    id={`wishlist-price-${index}`}
+                    step="0.01"
+                    min="0"
+                    value={item.price}
+                    onChange={(e) => handleWishlistItemChange(index, 'price', e.target.value)}
+                    placeholder="29.99"
+                  />
+                </div>
+
+                {wishlistItems.length > 1 && (
+                  <button type="button" onClick={() => removeWishlistItem(index)}>
+                    Remove Item
+                  </button>
+                )}
+              </div>
+            ))}
+
+            <button type="button" onClick={addWishlistItem}>
+              Add Another Wishlist Item
+            </button>
+
+            <div>
+              <button type="submit" disabled={childLoading || !isChildFormValid()}>
+                {childLoading ? 'Adding...' : 'Add Child'}
+              </button>
+            </div>
+          </form>
+
+          <h2>Existing Children</h2>
+          
+          {loadingChildren ? (
+            <div>Loading children...</div>
+          ) : children.length === 0 ? (
+            <div>No children added yet. Add a child above.</div>
+          ) : (
+            <div>
+              {children.map((child) => (
+                <div key={child.id} style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', borderRadius: '4px' }}>
+                  <h3>{child.firstName}</h3>
+                  {child.age && <div>Age: {child.age}</div>}
+                  {child.gender && <div>Gender: {child.gender}</div>}
+                  {child.clothingShirtSize && <div>Shirt Size: {child.clothingShirtSize}</div>}
+                  {child.clothingPantSize && <div>Pant Size: {child.clothingPantSize}</div>}
+                  {child.clothingShoeSize && <div>Shoe Size: {child.clothingShoeSize}</div>}
+                  {child.clothingToyPreference && <div>Preference: {child.clothingToyPreference}</div>}
+                  {child.interests && <div>Interests: {child.interests}</div>}
+                  {child.notes && <div>Notes: {child.notes}</div>}
+                  
+                  {child.wishlist && child.wishlist.length > 0 && (
+                    <div>
+                      <h4>Wishlist Items:</h4>
+                      <ul>
+                        {child.wishlist.map((item) => (
+                          <li key={item.id}>
+                            <strong>{item.name}</strong>
+                            {item.description && <div>{item.description}</div>}
+                            <div><a href={item.externalLink} target="_blank" rel="noopener noreferrer">{item.externalLink}</a></div>
+                            {item.price && <div>Price: ${item.price}</div>}
+                            <div>Status: {item.status}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  <button type="button" onClick={() => handleDeleteChild(child.id)}>
+                    Delete Child
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }
