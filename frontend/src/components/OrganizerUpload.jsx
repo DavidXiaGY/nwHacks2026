@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 function OrganizerUpload() {
@@ -10,17 +10,19 @@ function OrganizerUpload() {
     description: '',
     website: '',
     contactEmail: '',
-    latitude: '',
-    longitude: ''
+    address: ''
   })
   const [originalFormData, setOriginalFormData] = useState({
     name: '',
     description: '',
     website: '',
     contactEmail: '',
-    latitude: '',
-    longitude: ''
+    address: ''
   })
+  const [coordinates, setCoordinates] = useState({ latitude: null, longitude: null })
+  const [originalCoordinates, setOriginalCoordinates] = useState({ latitude: null, longitude: null })
+  const [geocoding, setGeocoding] = useState(false)
+  const geocodeTimeoutRef = useRef(null)
   const [message, setMessage] = useState({ text: '', type: '' })
   const [loading, setLoading] = useState(false)
   
@@ -92,16 +94,27 @@ function OrganizerUpload() {
               type: 'info' 
             })
             // Pre-fill form with existing data
+            // Note: We'll need to reverse geocode to get address, but for now just store coordinates
             const orphanageData = {
               name: existingOrphanage.name || '',
               description: existingOrphanage.description || '',
               website: existingOrphanage.website || '',
               contactEmail: existingOrphanage.contactEmail || '',
-              latitude: existingOrphanage.latitude?.toString() || '',
-              longitude: existingOrphanage.longitude?.toString() || ''
+              address: '' // Will be reverse geocoded if needed
             }
             setFormData(orphanageData)
             setOriginalFormData(orphanageData)
+            // Store coordinates for existing orphanage
+            if (existingOrphanage.latitude && existingOrphanage.longitude) {
+              const coords = {
+                latitude: existingOrphanage.latitude,
+                longitude: existingOrphanage.longitude
+              }
+              setCoordinates(coords)
+              setOriginalCoordinates(coords)
+              // Reverse geocode to get address
+              reverseGeocode(existingOrphanage.latitude, existingOrphanage.longitude)
+            }
             // Load children for this orphanage
             loadChildren(existingOrphanage.id, token)
           }
@@ -121,13 +134,91 @@ function OrganizerUpload() {
     }))
   }
 
+  // Geocode address to coordinates
+  const geocodeAddress = async (address) => {
+    if (!address || address.trim() === '') {
+      return null
+    }
+
+    setGeocoding(true)
+    try {
+      // Use Nominatim API (OpenStreetMap) - free and no API key required
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
+        {
+          headers: {
+            'User-Agent': 'OrphanageApp/1.0' // Required by Nominatim
+          }
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Geocoding service unavailable')
+      }
+
+      const data = await response.json()
+
+      if (data.length === 0) {
+        throw new Error('Address not found. Please try a more specific address.')
+      }
+
+      const result = data[0]
+      const lat = parseFloat(result.lat)
+      const lng = parseFloat(result.lon)
+
+      if (isNaN(lat) || isNaN(lng)) {
+        throw new Error('Invalid coordinates returned')
+      }
+
+      setCoordinates({ latitude: lat, longitude: lng })
+      return { latitude: lat, longitude: lng }
+    } catch (error) {
+      console.error('Geocoding error:', error)
+      setCoordinates({ latitude: null, longitude: null })
+      throw error
+    } finally {
+      setGeocoding(false)
+    }
+  }
+
+  // Reverse geocode coordinates to address
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+        {
+          headers: {
+            'User-Agent': 'OrphanageApp/1.0'
+          }
+        }
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.display_name) {
+          const address = data.display_name
+          setFormData(prev => ({
+            ...prev,
+            address: address
+          }))
+          setOriginalFormData(prev => ({
+            ...prev,
+            address: address
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Reverse geocoding error:', error)
+      // Don't throw - this is optional
+    }
+  }
+
   // Validation function to check if all required fields are filled
   const isFormValid = () => {
     return formData.name.trim() !== '' && 
-           formData.latitude.trim() !== '' && 
-           formData.longitude.trim() !== '' &&
-           !isNaN(parseFloat(formData.latitude)) &&
-           !isNaN(parseFloat(formData.longitude))
+           formData.address.trim() !== '' &&
+           coordinates.latitude !== null &&
+           coordinates.longitude !== null
   }
 
   const handleSubmit = async (e) => {
@@ -140,13 +231,27 @@ function OrganizerUpload() {
       return
     }
 
+    // Geocode address if we don't have coordinates yet
+    if (!coordinates.latitude || !coordinates.longitude) {
+      try {
+        const coords = await geocodeAddress(formData.address)
+        if (!coords) {
+          setMessage({ text: 'Please enter a valid address.', type: 'error' })
+          return
+        }
+      } catch (error) {
+        setMessage({ text: error.message || 'Failed to geocode address. Please check the address and try again.', type: 'error' })
+        return
+      }
+    }
+
     const submitData = {
       name: formData.name,
       description: formData.description || undefined,
       website: formData.website || undefined,
       contactEmail: formData.contactEmail || undefined,
-      latitude: parseFloat(formData.latitude),
-      longitude: parseFloat(formData.longitude)
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude
     }
 
     setLoading(true)
@@ -186,8 +291,13 @@ function OrganizerUpload() {
         description: formData.description,
         website: formData.website,
         contactEmail: formData.contactEmail,
-        latitude: formData.latitude,
-        longitude: formData.longitude
+        address: formData.address
+      })
+      
+      // Update original coordinates to reflect saved state
+      setOriginalCoordinates({
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude
       })
 
       setMessage({ text: 'Orphanage information saved successfully!', type: 'success' })
@@ -204,19 +314,87 @@ function OrganizerUpload() {
     }
   }
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     // Restore original form data
+    const restoredAddress = originalFormData.address
     setFormData({
       name: originalFormData.name,
       description: originalFormData.description,
       website: originalFormData.website,
       contactEmail: originalFormData.contactEmail,
-      latitude: originalFormData.latitude,
-      longitude: originalFormData.longitude
+      address: restoredAddress
     })
+    
     // Clear any messages
     setMessage({ text: '', type: '' })
+    
+    // Re-geocode the restored address if it exists to update the geocode status display
+    // This ensures the geocode status shows the correct state after cancel
+    if (restoredAddress && restoredAddress.trim() !== '') {
+      try {
+        await geocodeAddress(restoredAddress)
+      } catch (error) {
+        // If geocoding fails, restore original coordinates if they exist, otherwise clear
+        if (originalCoordinates.latitude !== null && originalCoordinates.longitude !== null) {
+          setCoordinates({
+            latitude: originalCoordinates.latitude,
+            longitude: originalCoordinates.longitude
+          })
+        } else {
+          setCoordinates({ latitude: null, longitude: null })
+        }
+        console.log('Geocoding failed on cancel:', error.message)
+      }
+    } else {
+      // If there's no address, restore original coordinates if they exist
+      if (originalCoordinates.latitude !== null && originalCoordinates.longitude !== null) {
+        setCoordinates({
+          latitude: originalCoordinates.latitude,
+          longitude: originalCoordinates.longitude
+        })
+      } else {
+        setCoordinates({ latitude: null, longitude: null })
+      }
+    }
   }
+
+  // Handle address input with debounced geocoding
+  const handleAddressChange = (e) => {
+    const address = e.target.value
+    setFormData(prev => ({
+      ...prev,
+      address: address
+    }))
+    
+    // Clear coordinates when address changes
+    setCoordinates({ latitude: null, longitude: null })
+    
+    // Clear existing timeout
+    if (geocodeTimeoutRef.current) {
+      clearTimeout(geocodeTimeoutRef.current)
+    }
+    
+    // Geocode address after user stops typing (debounce)
+    if (address.trim().length > 5) {
+      geocodeTimeoutRef.current = setTimeout(async () => {
+        try {
+          await geocodeAddress(address)
+        } catch (error) {
+          // Silently fail - user will see error on submit if address is invalid
+          console.log('Geocoding failed:', error.message)
+        }
+      }, 1000)
+    }
+  }
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (geocodeTimeoutRef.current) {
+        clearTimeout(geocodeTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const logout = () => {
     localStorage.clear()
@@ -487,31 +665,32 @@ function OrganizerUpload() {
         </div>
 
         <div>
-          <label htmlFor="latitude">Latitude *</label>
+          <label htmlFor="address">Address *</label>
           <input
-            type="number"
-            id="latitude"
-            name="latitude"
-            step="any"
-            value={formData.latitude}
-            onChange={handleInputChange}
+            type="text"
+            id="address"
+            name="address"
+            value={formData.address}
+            onChange={handleAddressChange}
             required
-            placeholder="e.g., 49.2827"
+            placeholder="e.g., 123 Main St, Vancouver, BC, Canada"
+            disabled={geocoding}
           />
-        </div>
-
-        <div>
-          <label htmlFor="longitude">Longitude *</label>
-          <input
-            type="number"
-            id="longitude"
-            name="longitude"
-            step="any"
-            value={formData.longitude}
-            onChange={handleInputChange}
-            required
-            placeholder="e.g., -123.1207"
-          />
+          {geocoding && (
+            <div style={{ fontSize: '0.9em', color: '#666', marginTop: '5px' }}>
+              Looking up address...
+            </div>
+          )}
+          {coordinates.latitude && coordinates.longitude && !geocoding && (
+            <div style={{ fontSize: '0.9em', color: '#28a745', marginTop: '5px' }}>
+              ✓ Address found: {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}
+            </div>
+          )}
+          {formData.address.trim().length > 5 && !coordinates.latitude && !geocoding && (
+            <div style={{ fontSize: '0.9em', color: '#dc3545', marginTop: '5px' }}>
+              Address not found. Please check and try again.
+            </div>
+          )}
         </div>
 
         <div>
